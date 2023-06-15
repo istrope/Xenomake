@@ -1,4 +1,4 @@
-name: spacemake
+name: xenomake
 channels:
     - bih-cubi
     - conda-forge
