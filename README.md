@@ -19,7 +19,7 @@ conda activate xenomake
 # Usage
 
 ## Add Species Information
-Required Inputs can be found at: https://www.ncbi.nlm.nih.gov/datasets/genome/
+Required Inputs can be found at: https://www.ncbi.nlm.nih.gov/datasets/genome/ <br>
 Run <xenomake_dir>/scripts/species_parser.py --help for more information and all flag options
 
 #### Required Flags:
