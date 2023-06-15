@@ -10,7 +10,6 @@ dependencies:
     - star>=2.7.1a
     - samtools>=1.13
     - sambamba>=0.6.8
-    - bowtie2>=2.3.4
     - bcl2fastq2>=2.19
     - fastqc>=0.11.9
     - pip>=21.1
@@ -22,10 +21,17 @@ dependencies:
     - r-pals>=1.7
     - r-hexbin
     - r-scales
+    - r-dplyr
+    - r-data.table
+    - r-ggplot2
     - pysam>=0.16.0.1
     - pot
     - openjdk==11.0.15
     - pigz
+    - zarr
+    - pytest
+    - pyyaml
+    - zarr
     - pip:
         - pandas>=1.3.0,<=1.5.1
         - scanpy>=1.8.1
