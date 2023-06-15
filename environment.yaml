@@ -1,11 +1,12 @@
 name: xenomake
 channels:
+    - numba
     - bih-cubi
     - conda-forge
     - bioconda
     - defaults
 dependencies:
-    - python>=3.6
+    - python>=3.10
     - snakemake>=5.32.0,<6.4.0
     - star>=2.7.1a
     - samtools>=1.13
@@ -28,15 +29,12 @@ dependencies:
     - pot
     - openjdk==11.0.15
     - pigz
-    - zarr
-    - pytest
-    - pyyaml
-    - zarr
     - pip:
         - pandas>=1.3.0,<=1.5.1
         - scanpy>=1.8.1
         - leidenalg>=0.8.1
-        - numpy>=1.18.1
+        - numpy>=1.22
+        - numba>=.56
         - more-itertools>=8.7.0
         - biopython>=1.78
         - scipy>=1.5.0
@@ -45,3 +43,6 @@ dependencies:
         - squidpy>=1.0.0
         - novosparc
         - opencv-python
+        - zarr
+        - pytest
+        - pyyaml
