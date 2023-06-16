@@ -21,7 +21,7 @@ Dependencies for xengsort are included within the environment.yaml file
 ```
 git clone https://gitlab.com/genomeinformatics/xengsort.git
 cd xengsort  # the directory of the cloned repository
-conda activate xenomake #activate conda environment if not done already
+conda activate xenomake   # activate conda environment if not done already
 pip install -e .
 ```
 
@@ -68,5 +68,5 @@ Availability: https://github.com/broadinstitute/Drop-seq and https://broadinstit
   
 ## Run Pipeline
 ```
-snakemake --configfile workflow/config.yaml --cores <n_cores>
+snakemake -s xenomake.smk --configfile workflow/config.yaml --cores <n_cores>
 ```
