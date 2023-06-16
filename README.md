@@ -26,7 +26,7 @@ pip install -e .
 ```
 # Test Installation
 #### Test Xengsort Installation
-Allow ~15 minutes to complete all tests
+Allow ~15 minutes to complete all tests <br>
 If you just want to test default settings, run line two and three
 ```
 snakemake -s test/xengsort.smk --cores 4  #all test parameters (440 jobs)
@@ -36,9 +36,7 @@ xengsort classify --index test/test_index.zarr --fastq test/xengsort_data/gzippe
 #### Test Xenomake Pipeline
 Allow ~1hr to complete
 ```
-snakemake -s test_data/xenomake_test.smk --cores 4 -n  # Dry Run
-snakemake -s test_data/xenomake_test.smk --dag  --cores 4| dot -Tsvg > dag.svg  #Directed acrylic graph
-snakemake -s test_data/xenomake_test.smk  --cores 4 #Running through sample dataset
+test_data/xenomake.sh
 ```
 # Usage
 
@@ -83,5 +81,5 @@ Availability: https://github.com/broadinstitute/Drop-seq and https://broadinstit
   
 ## Run Pipeline
 ```
-snakemake -s xenomake.smk --configfile workflow/config.yaml --cores <n_cores>
+snakemake -s <snakemake_filedir>/xenomake.smk --configfile config.yaml --cores <n_cores>
 ```
