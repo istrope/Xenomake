@@ -24,7 +24,10 @@ cd xengsort  # the directory of the cloned repository
 conda activate xenomake   # activate conda environment if not done already
 pip install -e .
 ```
-
+# Test Installation
+```
+#FINISH TEST DATASETS
+```
 # Usage
 
 ## Add Species Information
