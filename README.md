@@ -26,9 +26,12 @@ pip install -e .
 ```
 # Test Installation
 #### Test Xengsort Installation
-Allow ~15 minutes to complete
+Allow ~15 minutes to complete all tests
+If you just want to test default settings, run line two and three
 ```
-snakemake -s test/xengsort.smk --cores 4
+snakemake -s test/xengsort.smk --cores 4  #all test parameters (440 jobs)
+xengsort index --host test/xengsort_data/ecoli.fa.gz --graft test/xengsort_data/ehec.fa.gz -n 10000 --index test/test_index.zarr
+xengsort classify --index test/test_index.zarr --fastq test/xengsort_data/gzipped_chunks1.fq.gz --out test/test_classify
 ```
 #### Test Xenomake Pipeline
 Allow ~1hr to complete
