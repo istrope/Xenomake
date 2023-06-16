@@ -26,10 +26,12 @@ pip install -e .
 ```
 # Test Installation
 #### Test Xengsort Installation
+Allow ~15 minutes to complete
 ```
 snakemake -s test/xengsort.smk --cores 4
 ```
 #### Test Xenomake Pipeline
+Allow ~1hr to complete
 ```
 snakemake -s test_data/xenomake_test.smk --cores 4 -n  # Dry Run
 snakemake -s test_data/xenomake_test.smk --dag  --cores 4| dot -Tsvg > dag.svg  #Directed acrylic graph
