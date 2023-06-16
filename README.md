@@ -27,13 +27,13 @@ pip install -e .
 # Test Installation
 #### Test Xengsort Installation
 ```
-snakemake -s test/xengsort.smk --cores 1
+snakemake -s test/xengsort.smk --cores 4
 ```
 #### Test Xenomake Pipeline
 ```
-snakemake -s test_data/xenomake_test.smk  -n  # Dry Run
-snakemake -s test_data/xenomake_test.smk --dag  | dot -Tsvg > dag.svg  #Directed acrylic graph
-snakemake -s test_data/xenomake_test.smk  #Running through sample dataset
+snakemake -s test_data/xenomake_test.smk --cores 4 -n  # Dry Run
+snakemake -s test_data/xenomake_test.smk --dag  --cores 4| dot -Tsvg > dag.svg  #Directed acrylic graph
+snakemake -s test_data/xenomake_test.smk  --cores 4 #Running through sample dataset
 ```
 # Usage
 
