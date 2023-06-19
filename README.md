@@ -36,7 +36,8 @@ xengsort classify --index test/test_index.zarr --fastq test/xengsort_data/gzippe
 #### Test Xenomake Pipeline
 Allow ~1hr to complete
 ```
-test_data/xenomake.sh
+chmod +x test_data/xenomake.sh
+bash test_data/xenomake.sh
 ```
 # Usage
 
