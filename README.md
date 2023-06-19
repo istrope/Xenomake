@@ -75,10 +75,10 @@ python scripts/config.py \
 --threads <n_threads>
 ```
 #### Other Dependencies
-Xenomake requires Dropseq-tools and picard to successfully run <br>
-By default the path used by the pipeline is <cwd>/tools/Dropseq-tools-2.5.3 and <cwd>/tools/picard.jar <br>
+Xenomake requires Dropseq-tools and picard to successfully run <br> <br>
+Defualt paths: <cwd>/tools/Dropseq-tools-2.5.3 and <cwd>/tools/picard.jar <br>
 However, you can specify the absolute path to your install with the **--picard** and **--dropseq_tools** flags in config.py <br>
-Availability: https://github.com/broadinstitute/Drop-seq and https://broadinstitute.github.io/picard/
+**Tool Availability**: https://github.com/broadinstitute/Drop-seq and https://broadinstitute.github.io/picard/
   
 ## Run Pipeline
 ```
