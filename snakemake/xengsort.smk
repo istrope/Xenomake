@@ -1,14 +1,15 @@
 
 '''
 Author: Ivy Strope
-Date: 5/31/23
+Created: 5/31/23
 Contact: benjamin.strope@bcm.edu
+Last Edited: 6/20/23
 '''
  ############################################
  # INCLUDE MAPPING MODULE AND POST PROCESSING
  ############################################
 include: 'mapping.smk'
-configfile: 'config.yaml'
+#configfile: 'config.yaml'
 #############################################
 #       SPECIFY WILDCARD VARIABLE
 #############################################
@@ -35,8 +36,7 @@ rule mapped_reads:
     output:
         human=temp('{OUTDIR}/{sample}/human_mapped.bam'),
         mouse=temp('{OUTDIR}/{sample}/mouse_mapped.bam')
-    threads:
-        config['threads']
+    threads: config['threads']
     shell:
         """
         samtools view -F 4 -b {input.human} > {output.human}
@@ -49,8 +49,7 @@ rule mapped_readnames:
     output:
         human=temp('{OUTDIR}/{sample}/human_readnames.txt'),
         mouse=temp('{OUTDIR}/{sample}/mouse_readnames.txt')
-    threads:
-        config['threads']
+    threads: config['threads']
     shell:
         """
         samtools view {input.human} | cut -f1 | sort > {output.human}
@@ -62,8 +61,7 @@ rule overlapped_reads:
         mouse='{OUTDIR}/{sample}/mouse_readnames.txt'
     output:
         '{OUTDIR}/{sample}/xengsort/overlapped_reads.txt'
-    threads:
-        config['threads']
+    threads: config['threads']
     shell:
         'comm -12 {input.mouse} {input.human} > {output}'
 
@@ -73,8 +71,7 @@ rule subset_reads:
         readlist='{OUTDIR}/{sample}/xengsort/overlapped_reads.txt'
     output:
         temp('{OUTDIR}/{sample}/xengsort/overlapped.bam')
-    threads:
-        config['threads']
+    threads: config['threads']
     params:
         picard=config['picard']
     shell:
@@ -85,8 +82,7 @@ rule bam_to_fastq:
         '{OUTDIR}/{sample}/xengsort/overlapped.bam'
     output:
         '{OUTDIR}/{sample}/xengsort/overlapped.fastq'
-    threads:
-        config['threads']
+    threads: config['threads']
     shell:
         'samtools fastq {input} > {output}'
 
@@ -99,14 +95,9 @@ rule xengsort_index:
         mouse='species/mouse/genome.fa'
     output:
         directory('species/idx.zarr')
-    threads:
-        config['threads']
-    run:
-    #if user provided a path to an already made xengsort index,link to species dir instead of rerunning this process
-        if not os.path.isdir('species/idx.zarr'):
-            shell('xengsort index -H {params.mouse} -G {params.human} -n 4_500_000_000 -W {threads} --index {output}')
-        else:
-            print('user provided xengsort index directory,continuing to classification of overlapped reads')
+    threads: config['threads']
+    shell:
+        'xengsort index -H {params.mouse} -G {params.human} -n 4_500_000_000 -W {threads} --index {output}'
 
 
 rule xengsort_clasify:
@@ -119,13 +110,23 @@ rule xengsort_clasify:
         both='{OUTDIR}/{sample}/xengsort/{sample}-both.fq',
         neither='{OUTDIR}/{sample}/xengsort/{sample}-neither.fq',
         ambigious='{OUTDIR}/{sample}/xengsort/{sample}-ambiguous.fq'
-    threads:
-        config['threads']
+    threads: config['threads']
+    log:
+        "{OUTDIR}/{sample}/xengsort/{sample}_xengsort.log"
     params:
-        outprefix=lambda wc: f"{OUTDIR}/{sample}/xengsort/{sample}"
+        outprefix=lambda wc: f"{wc.OUTDIR}/{wc.sample}/xengsort/{wc.sample}",
+        depug='-DD',
+        prefetch=1
     run:
-        'xengsort classify --index {input.index} --fastq {input.fastq} --out {params.outprefix}'
-
+        """
+        xengsort {params.debug} classify \
+        --index {input.index} \
+        --fastq {input.fastq} \
+        --out {params.outprefix} \
+        --threads {threads} \
+        --chunksize 16.0 \
+        --prefetch {params.prefetch} &> {log}'
+        """
 rule filter_files:
     input:
         mouse='{OUTDIR}/{sample}/xengsort/{sample}-host.fq',
@@ -136,8 +137,7 @@ rule filter_files:
     output:
         human=temp('{OUTDIR}/{sample}/xengsort/filter_human.fastq'),
         mouse=temp('{OUTDIR}/{sample}/xengsort/filter_mouse.fastq')
-    threads:
-        config['threads']
+    threads: config['threads']
     shell:
         '''
         cat {input.ambiguous} {input.both} {input.mouse} {input.neither} > {output.human}
@@ -151,8 +151,7 @@ rule extract_readnames:
     output:
         human=temp('{OUTDIR}/{sample}/xengsort/filter_human.txt'),
         mouse=temp('{OUTDIR}/{sample}/xengsort/filter_mouse.txt')
-    threads:
-        config['threads']
+    threads: config['threads']
     shell:
         """
         awk 'NR%4==1 {{print substr($1,2)}}' {input.human} > {output.human}
@@ -170,8 +169,7 @@ rule subset_xengsort:
     output:
         human='{OUTDIR}/{sample}/final/{sample}_human_final.bam',
         mouse='{OUTDIR}/{sample}/final/{sample}_mouse_final.bam'
-    threads:
-        config['threads']
+    threads: config['threads']
     params:
         picard=config['picard']
     shell:
