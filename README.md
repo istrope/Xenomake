@@ -1,4 +1,4 @@
-# xenomake
+# Xenomake
 Processing pipeline for Patient Derived Xenograft (PDX) Spatial Transcriptomics Datasets
 
 
@@ -24,3 +24,6 @@ cd xengsort  # the directory of the cloned repository
 conda activate xenomake   # activate conda environment if not done already
 pip install -e .
 ```
+
+# RUN Xeomake
+check: https://github.com/Biivy/xenomake/wiki
