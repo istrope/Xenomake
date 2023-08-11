@@ -54,7 +54,8 @@ def get_args(required=True):
         '--threads',
         help='number of cores to use',
         required=False,
-        default=8
+        default=8,
+        type=int
     )
     args = parser.parse_args()
     return args

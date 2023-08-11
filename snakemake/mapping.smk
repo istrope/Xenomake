@@ -4,11 +4,16 @@ Creation: 6/16/23
 Contact: benjamin.strope@bcm.edu
 Last Edit: 6/20/23
 '''
-
+#############################################
+#       SPECIFY PARAMETERS
+##############################################
+cell_barcode_flags="BASE_RANGE=1-16 BASE_QUALITY=10 BARCODED_READ=1 DISCARD_READ=False TAG_NAME=CB NUM_BASES_BELOW_QUALITY=1"
+umi_flags="BASE_RANGE=17-28 BASE_QUALITY=10 BARCODED_READ=1 DISCARD_READ=False TAG_NAME=MI NUM_BASES_BELOW_QUALITY=1"
+star_mapping_flags="--readFilesCommand samtools view -f 4 --readFilesType SAM SE --outSAMtype BAM Unsorted --genomeLoad NoSharedMemory --outSAMprimaryFlag AllBestScore --outSAMattributes All --outSAMunmapped None --outStd BAM_Unsorted --limitOutSJcollapsed 5000000"
 #############################################
 #       SPECIFY WILDCARD VARIABLE
 #############################################
-#configfile: 'config.yaml'
+configfile: 'config.yaml'
 OUTDIR=config['outdir']
 sample=config['sample']
 threads=config['threads']
@@ -23,48 +28,48 @@ rule FastqtoSam:
         read1=config['r1'],
         read2=config['r2']
     output:
-        '{OUTDIR}/{sample}/mapping/unaligned.bam'
+        '{OUTDIR}/{sample}/preprocess/unaligned.bam'
     threads: config['threads']
     params:
-        "PLATFORM=illumina SORT_ORDER=queryname SAMPLE_NAME={sample}"
+        "PLATFORM=illumina SORT_ORDER=queryname SAMPLE_NAME={sample} "
     shell:
         """
         java -jar {picard} FastqToSam F1={input.read1} F2={input.read2} O={output} {params}
         """
 
-rule tagCellBarcodes:
+rule TagCellBarcodes:
     input:
-        '{OUTDIR}/{sample}/mapping/unaligned.bam'
+        '{OUTDIR}/{sample}/preprocess/unaligned.bam'
     output:
-        bam=temp('{OUTDIR}/{sample}/mapping/unaligned_tagged_cell.bam'),
-        summary='{OUTDIR}/{sample}/mapping/tag_cell_barcodes.summary'
+        bam=temp('{OUTDIR}/{sample}/preprocess/unaligned_tagged_cell.bam'),
+        summary='{OUTDIR}/{sample}/preprocess/tag_cell_barcodes.summary'
     params:
-        "BASE_RANGE=1-16 BASE_QUALITY=10 BARCODED_READ=1 DISCARD_READ=False TAG_NAME=CB NUM_BASES_BELOW_QUALITY=1"
+        cell_barcode_flags
     threads: config['threads']
     shell:
         """
         {dropseq}/TagBamWithReadSequenceExtended INPUT={input} OUTPUT={output.bam} \
         SUMMARY={output.summary} {params}
         """
-rule tagUMI:
+rule TagUMI:
     input:
-        '{OUTDIR}/{sample}/mapping/unaligned_tagged_cell.bam',
+        '{OUTDIR}/{sample}/preprocess/unaligned_tagged_cell.bam',
     output:
-        bam=temp('{OUTDIR}/{sample}/mapping/unaligned_tagged_molecular.bam'),
-        summary='{OUTDIR}/{sample}/mapping/tag_umi.summary',
+        bam=temp('{OUTDIR}/{sample}/preprocess/unaligned_tagged_molecular.bam'),
+        summary='{OUTDIR}/{sample}/preprocess/tag_umi.summary',
     params:
-        "BASE_RANGE=17-28 BASE_QUALITY=10 BARCODED_READ=1 DISCARD_READ=False TAG_NAME=MI NUM_BASES_BELOW_QUALITY=1"
+        umi_flags
     threads: config['threads']
     shell:
         """
         {dropseq}/TagBamWithReadSequenceExtended INPUT={input} OUTPUT={output.bam} SUMMARY={output.summary} {params}
         """
-rule TrimStartingSequence:
+rule TrimAdapter:
     input:
-        '{OUTDIR}/{sample}/mapping/unaligned_tagged_molecular.bam'
+        '{OUTDIR}/{sample}/preprocess/unaligned_tagged_molecular.bam'
     output:
-        bam=temp('{OUTDIR}/{sample}/mapping/tagged_trimmed.bam'),
-        summary='{OUTDIR}/{sample}/mapping/trimmed_starting_sequence.summary'
+        bam=temp('{OUTDIR}/{sample}/preprocess/tagged_trimmed.bam'),
+        summary='{OUTDIR}/{sample}/preprocess/trimmed_starting_sequence.summary'
     params:
         "SEQUENCE=AAGCAGTGGTATCAACGCAGAGTGAATGGG MISMATCHES=0 NUM_BASES=5"
     threads: config['threads']
@@ -76,10 +81,10 @@ rule TrimStartingSequence:
 
 rule PolyATrimmer:
     input:
-        '{OUTDIR}/{sample}/mapping/tagged_trimmed.bam'
+        '{OUTDIR}/{sample}/preprocess/tagged_trimmed.bam'
     output:
-        bam=temp('{OUTDIR}/{sample}/mapping/tagged_polyA_adapter_trimmed.bam'),
-        summary='{OUTDIR}/{sample}/mapping/polyATrimmer.summary'
+        bam=temp('{OUTDIR}/{sample}/preprocess/tagged_polyA_adapter_trimmed.bam'),
+        summary='{OUTDIR}/{sample}/preprocess/polyATrimmer.summary'
     params:
         "MISMATCHES=0 NUM_BASES=6"
     threads: config['threads']
@@ -88,23 +93,23 @@ rule PolyATrimmer:
         {dropseq}/PolyATrimmer OUTPUT_SUMMARY={output.summary} INPUT={input} OUTPUT={output.bam} {params}
         """
 
-
-rule SamtoFastq:
+rule Generate_SE_Ubam:
     input:
-        bam='{OUTDIR}/{sample}/mapping/tagged_polyA_adapter_trimmed.bam'
+        bam='{OUTDIR}/{sample}/preprocess/tagged_polyA_adapter_trimmed.bam'
+        header='{OUTDIR}/{sample}/preprocess/unaligned.bam'
     output:
-        read1=temp('{OUTDIR}/{sample}/mapping/{sample}_processed_R1.fastq'),
-        read2=temp('{OUTDIR}/{sample}/mapping/{sample}_processed_R2.fastq')
+        bam='{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam'
     threads: config['threads']
     shell:
         """
-        java -jar {picard} SamToFastq I={input} FASTQ={output.read1} SECOND_END_FASTQ={output.read2}
+        samtools view {input.bam} | awk "NR%2==0" | samtools view -b - | \
+        java -jar {picard} ReplaceSamHeader I=/dev/stdin H={input.header} O={output.bam}
         """
 ############################################
 #      RUN STAR INDEX AND ALIGNMENT
 ############################################
 
-rule index_genome:
+rule Index_Genomes:
     input:
         mouse_ref = 'species/mouse/genome.fa',
         mouse_annotation='species/mouse/annotation.gtf',
@@ -124,7 +129,7 @@ rule index_genome:
                  --genomeDir {output.human_index} \
                  --genomeFastaFiles {input.human_ref} \
                  --sjdbGTFfile {input.human_annotation}
-	i
+
 	    mkdir {output.mouse_index} &&
 	    STAR --runMode genomeGenerate \
                  --runThreadN {threads} \
@@ -132,143 +137,64 @@ rule index_genome:
                  --genomeFastaFiles {input.mouse_ref} \
                  --sjdbGTFfile {input.mouse_annotation}
         """
-rule gzip_fastq:
+rule STAR_Human:
     input:
-	    r1='{OUTDIR}/{sample}/mapping/{sample}_processed_R1.fastq',
-	    r2='{OUTDIR}/{sample}/mapping/{sample}_processed_R2.fastq'
-    output:
-	    r1='{OUTDIR}/{sample}/mapping/{sample}_processed_R1.fastq.gz',
-	    r2='{OUTDIR}/{sample}/mapping/{sample}_processed_R2.fastq.gz'
-    threads: config['threads']
-    shell:
-	    """
-	    gzip -nc {input.r1} > {output.r1}
-	    gzip -nc {input.r2} > {output.r2}
-	    """
-rule STAR_aln_human:
-    input:
-        reads=expand('{OUTDIR}/{sample}/mapping/{sample}_processed_{read}.fastq.gz',OUTDIR=config['outdir'],sample=config['sample'],read=['R1','R2']),
+        ubam='{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam',
         index='species/human/star_index/'
     output:
         aln=temp('{OUTDIR}/{sample}/mapping/human_Aligned.out.bam'),
         sj='{OUTDIR}/{sample}/mapping/human_SJ.out.tab',
         log_final='{OUTDIR}/{sample}/mapping/human_Log.final.out',
         log_progress='{OUTDIR}/{sample}/mapping/human_Log.progress.out',
-        log='{OUTDIR}/{sample}/mapping/human_Log.out'
+        log='{OUTDIR}/{sample}/mapping/human_Log.out',
     params:
         file_prefix = '{OUTDIR}/{sample}/mapping/human_',
         annotation='species/human/annotation.gtf',
-        aln="--readFilesCommand zcat --outSAMtype BAM Unsorted --genomeLoad NoSharedMemory --outSAMprimaryFlag AllBestScore --outSAMattributes All --outSAMunmapped Within --outStd BAM_Unsorted --limitOutSJcollapsed 5000000"
+        aln=star_mapping_flags,
+        tmpdir = '{OUTDIR}/{sample}mapping/mouse__STAR*'
     threads:
         config['threads']
     shell:
         """
         STAR --genomeDir {input.index} \
-            --readFilesIn {input.reads} \
+            --readFilesIn {input.ubam} \
             --outFileNamePrefix {params.file_prefix} \
             --sjdbGTFfile {params.annotation} \
             {params.aln} \
-            --runThreadN {threads} > {output.aln}
+            --runThreadN {threads} | \
+            python scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | \
+            {dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation}
         """
 
-rule STAR_aln_mouse:
+rule STAR_Mouse:
     input:
-        reads=expand('{OUTDIR}/{sample}/mapping/{sample}_processed_{read}.fastq.gz',OUTDIR=config['outdir'],sample=config['sample'],read=['R1','R2']),
+        ubam='{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam',
         index='species/mouse/star_index/'
     output:
         aln=temp('{OUTDIR}/{sample}/mapping/mouse_Aligned.out.bam'),
-	sj='{OUTDIR}/{sample}/mapping/mouse_SJ.out.tab',
+        sj='{OUTDIR}/{sample}/mapping/mouse_SJ.out.tab',
         log_final='{OUTDIR}/{sample}/mapping/mouse_Log.final.out',
         log_progress='{OUTDIR}/{sample}/mapping/mouse_Log.progress.out',
         log='{OUTDIR}/{sample}/mapping/mouse_Log.out'
     params:
         file_prefix = '{OUTDIR}/{sample}/mapping/mouse_',
         annotation='species/mouse/annotation.gtf',
-        aln="--readFilesCommand zcat --outSAMtype BAM Unsorted --genomeLoad NoSharedMemory --outSAMprimaryFlag AllBestScore --outSAMattributes All --outSAMunmapped Within --outStd BAM_Unsorted --limitOutSJcollapsed 5000000"
+        aln=star_mapping_flags,
+        tmpdir = '{OUTDIR}/{sample}mapping/mouse__STAR*'
     threads:
         config['threads']
     shell:
         """
         STAR --genomeDir {input.index} \
-            --readFilesIn {input.reads} \
+            --readFilesIn {input.ubam} \
             --outFileNamePrefix {params.file_prefix} \
             --sjdbGTFfile {params.annotation} \
             {params.aln} \
-            --runThreadN {threads} > {output.aln}
-        """
-############################################
-#  SORT AND MERGE TAGS INTO ALIGNED FILE
-############################################
-rule SortSam:
-    input:
-        human='{OUTDIR}/{sample}/mapping/human_Aligned.out.bam',
-        mouse='{OUTDIR}/{sample}/mapping/mouse_Aligned.out.bam'
-    output:
-        human=temp('{OUTDIR}/{sample}/mapping/human_sorted_aligned.bam'),
-        mouse=temp('{OUTDIR}/{sample}/mapping/mouse_sorted_aligned.bam')
-    threads: config['threads']
-    shell:
-        """
-        java -jar {picard} SortSam I={input.human} O={output.human} SORT_ORDER=queryname
-        java -jar {picard} SortSam I={input.mouse} O={output.mouse} SORT_ORDER=queryname
+            --runThreadN {threads} | \
+            python scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | \
+            {dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation}
         """
 
-rule MergeAlignment:
-    input:
-        human_aln='{OUTDIR}/{sample}/mapping/human_sorted_aligned.bam',
-        ubam='{OUTDIR}/{sample}/mapping/tagged_polyA_adapter_trimmed.bam',
-        mouse_aln='{OUTDIR}/{sample}/mapping/mouse_sorted_aligned.bam'
-    output:
-        human=temp('{OUTDIR}/{sample}/mapping/human_merged.bam'),
-        mouse=temp('{OUTDIR}/{sample}/mapping/mouse_merged.bam')
-    threads: config['threads']
-    params:
-        human_ref='species/human/genome.fa',
-        mouse_ref='species/mouse/genome.fa',
-        other='INCLUDE_SECONDARY_ALIGNMENTS=false PAIRED_RUN=false'
-    shell:
-        """
-        java -jar {picard} MergeBamAlignment REFERENCE_SEQUENCE={params.human_ref}\
-                                            UNMAPPED_BAM={input.ubam} \
-                                            ALIGNED_BAM={input.human_aln} \
-                                            OUTPUT={output.human} \
-                                            {params.other}
-        java -jar {picard} MergeBamAlignment REFERENCE_SEQUENCE={params.mouse_ref} \
-                                            UNMAPPED_BAM={input.ubam} \
-                                            ALIGNED_BAM={input.mouse_aln} \
-                                            OUTPUT={output.mouse} \
-                                            {params.other}
-        """
-############################################
-# TAG READ with GENE and FILTER MULTIMAPPED
-############################################
-rule TagReadWithGeneFunction:
-    input:
-        human='{OUTDIR}/{sample}/mapping/human_merged.bam',
-        mouse='{OUTDIR}/{sample}/mapping/mouse_merged.bam'
-    output:
-        human=temp('{OUTDIR}/{sample}/mapping/human_final.bam'),
-        mouse=temp('{OUTDIR}/{sample}/mapping/mouse_final.bam')
-    params:
-        human_annotation='species/human/annotation.gtf',
-        mouse_annotation='species/mouse/annotation.gtf'
-    threads: config['threads']
-    shell:
-        """
-        {dropseq}/TagReadWithGeneFunction I={input.human} O={output.human} ANNOTATIONS_FILE={params.human_annotation}
-        {dropseq}/TagReadWithGeneFunction I={input.human} O={output.mouse} ANNOTATIONS_FILE={params.human_annotation}
-        """
 
-#rule filter_mm_reads:
- #   input:
-  #      human='{OUTDIR}/{sample}/mapping/human_merged_tagged.bam',
-   #     mouse='{OUTDIR}/{sample}/mapping/mouse_merged_tagged.bam'
-   # output:
-    #    human='{OUTDIR}/{sample}/mapping/human_final.bam',
-     3   mouse='{OUTDIR}/{sample}/mapping/mouse_final.bam'
-   # shell:
-    #    """
-     #   python scripts/filter_mm_reads.py --in-bam {input.human} --out-bam {output.human}
-      #  python scripts/filter_mm_reads.py --in-bam {input.mouse} --out-bam {output.mouse}
-      #  """
+
 
