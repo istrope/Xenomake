@@ -15,6 +15,13 @@ cd xenomake
 conda env create -n xenomake -f environment.yml
 conda activate xenomake
 ```
+## Install R Dependencies
+```
+R
+install.packages("BiocManager")
+install.packages(c('Matrix','data.table'))
+BiocManager::install(c('rhdf5','AnnotationDbi','org.Hs.eg.db','org.Mm.eg.db'))
+```
 ## Install Xengsort for Xenograft Read Sorting <br>
 see https://gitlab.com/genomeinformatics/xengsort for more information <br>
 Dependencies for xengsort are included within the environment.yaml file
