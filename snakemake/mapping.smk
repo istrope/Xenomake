@@ -96,14 +96,25 @@ rule PolyATrimmer:
 rule Generate_SE_Ubam:
     input:
         bam='{OUTDIR}/{sample}/preprocess/tagged_polyA_adapter_trimmed.bam'
+    output:
+        bam=temp('{OUTDIR}/{sample}/preprocess/unaligned_se.bam')
+    threads: config['threads']
+    shell:
+        """
+        samtools view {input.bam} | awk "NR%2==0" | samtools view -b - > {output.bam}
+        """
+
+rule Fix_Header:
+    input:
+        bam='{OUTDIR}/{sample}/preprocess/unaligned_se.bam',
         header='{OUTDIR}/{sample}/preprocess/unaligned.bam'
     output:
         bam='{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam'
     threads: config['threads']
     shell:
         """
-        samtools view {input.bam} | awk "NR%2==0" | samtools view -b - | \
-        java -jar {picard} ReplaceSamHeader I=/dev/stdin H={input.header} O={output.bam}
+        samtools view -H {input.header} | \
+        samtools reheader - {input.bam} > {output.bam}
         """
 ############################################
 #      RUN STAR INDEX AND ALIGNMENT
@@ -163,6 +174,7 @@ rule STAR_Human:
             {params.aln} \
             --runThreadN {threads} | \
             python scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | \
+            sambamba sort -n /dev/stdin -o /dev/stdout | \
             {dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation}
         """
 
@@ -191,7 +203,8 @@ rule STAR_Mouse:
             --sjdbGTFfile {params.annotation} \
             {params.aln} \
             --runThreadN {threads} | \
-            python scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | \
+            python scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | 
+            sambamba sort -n /dev/stdin -o /dev/stdout | \
             {dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation}
         """
 

@@ -33,14 +33,14 @@ rule Extract_Human_Readnames:
         reads=temp('{OUTDIR}/{sample}/sorting/human_readnames.txt'),
     threads: config['threads']
     shell:
-        "sambamba view -F 4 {input.bam} | cut -f1 | LC_ALL=C sort > {output.reads}"
+        "samtools view -F 4 {input.bam} | cut -f1 | sort > {output.reads}"
 rule Extract_Mouse_Readnames:
     input:
         bam='{OUTDIR}/{sample}/mapping/mouse_Aligned.out.bam'
     output:
         reads=temp('{OUTDIR}/{sample}/sorting/mouse_readnames.txt')
     shell:
-        "sambamba view -F 4 {input.bam} |cut -f1 | LC_ALL=C sort > {output.reads}"
+        "samtools view -F 4 {input.bam} | cut -f1 | sort > {output.reads}"
 
 rule Find_Overlapped_Reads:
     input:
@@ -60,13 +60,13 @@ rule Remove_Overlapped_Reads:
         human_bam='{OUTDIR}/{sample}/mapping/human_Aligned.out.bam',
         overlapped_reads='{OUTDIR}/{sample}/sorting/overlapped.txt'
     output:
-        human=temp('{OUTDIR}/{sample}/mouse_remaining.bam'),
-        mouse=temp('{OUTDIR}/{sample}/human_remaining.bam')
+        human=temp('{OUTDIR}/{sample}/human_remaining.bam'),
+        mouse=temp('{OUTDIR}/{sample}/mouse_remaining.bam')
     threads: config['threads']
     shell:
         """
-        java -jar {picard} I={input.mouse_bam} O={output.mouse} READ_LIST_FILE={input.overlapped_reads} FILTER=excludeReadList
-        java -jar {picard} I={input.human_bam} O={output.human} READ_LIST_FILE={input.overlapped_reads} FILTER=excludeReadList
+        java -jar {picard} FilterSamReads I={input.mouse_bam} O={output.mouse} READ_LIST_FILE={input.overlapped_reads} FILTER=excludeReadList
+        java -jar {picard} FilterSamReads I={input.human_bam} O={output.human} READ_LIST_FILE={input.overlapped_reads} FILTER=excludeReadList
         """
 
 rule Mouse_Overlapped:
@@ -77,7 +77,7 @@ rule Mouse_Overlapped:
         bam=temp('{OUTDIR}/{sample}/sorting/mouse_overlapped.bam')
     threads: config['threads']
     shell:
-        "java -jar {picard} I={input.bam} O={output.bam} READ_LIST_FILE={input.readlist} FILTER=includeReadList"
+        "java -jar {picard} FilterSamReads I={input.bam} O={output.bam} READ_LIST_FILE={input.readlist} FILTER=includeReadList"
 
 rule Human_Overlapped:
     input:
@@ -87,7 +87,7 @@ rule Human_Overlapped:
         bam=temp('{OUTDIR}/{sample}/sorting/human_overlapped.bam')
     threads: config['threads']
     shell:
-        "java -jar {picard} I={input.bam} O={output.bam} READ_LIST_FILE={input.readlist} FILTER=includeReadList"
+        "java -jar {picard} FilterSamReads I={input.bam} O={output.bam} READ_LIST_FILE={input.readlist} FILTER=includeReadList"
 #############################################
 #           RUN XENOGRAFT SORTING
 #############################################
@@ -107,12 +107,12 @@ rule Xengsort_Clasify:
     input:
         bam='{OUTDIR}/{sample}/sorting/mouse_overlapped.bam',
         index='species/idx.zarr'
-    output: #only need to specify one file, if this succeeds then all files generated correctly 
-        '{OUTDIR}/{sample}/xengsort/{sample}-host.fq',
-        '{OUTDIR}/{sample}/xengsort/{sample}-graft.fq',
-        '{OUTDIR}/{sample}/xengsort/{sample}-ambiguous.fq',
-        '{OUTDIR}/{sample}/xengsort/{sample}-neither.fq',
-        '{OUTDIR}/{sample}/xengsort/{sample}-both.fq'
+    output: 
+        host='{OUTDIR}/{sample}/xengsort/{sample}-host.fq',
+        graft='{OUTDIR}/{sample}/xengsort/{sample}-graft.fq',
+        ambiguous='{OUTDIR}/{sample}/xengsort/{sample}-ambiguous.fq',
+        neither='{OUTDIR}/{sample}/xengsort/{sample}-neither.fq',
+        both='{OUTDIR}/{sample}/xengsort/{sample}-both.fq'
     threads: config['threads']
     log:
         "{OUTDIR}/{sample}/xengsort/{sample}_xengsort.log"
@@ -129,7 +129,7 @@ rule Xengsort_Clasify:
         --out {params.outprefix} \
         --threads {threads} \
         --chunksize 16.0 \
-        --prefetch {params.prefetch} &> {log}'
+        --prefetch {params.prefetch} &> {log}
         """
 
 #############################################
@@ -137,15 +137,28 @@ rule Xengsort_Clasify:
 #############################################
 rule Extract_Xenograft_Readnames:
     input:
-        expand('{OUTDIR}/{sample}/xengsort/{sample}-{wildcard}.fq',OUTDIR=config['outdir'],sample=config['sample'],wildcard=xengsort_outs)
+        host='{OUTDIR}/{sample}/xengsort/{sample}-host.fq',
+        graft='{OUTDIR}/{sample}/xengsort/{sample}-graft.fq',
+        ambiguous='{OUTDIR}/{sample}/xengsort/{sample}-ambiguous.fq',
+        neither='{OUTDIR}/{sample}/xengsort/{sample}-neither.fq',
+        both='{OUTDIR}/{sample}/xengsort/{sample}-both.fq'
+    
     output:
-        temp(expand('{OUTDIR}/{sample}/xengsort/{sample}-{wildcard}.txt',OUTDIR=config['outdir'],sample=config['sample'],wildcard=xengsort_outs)) 
+        host='{OUTDIR}/{sample}/xengsort/{sample}-host.txt',
+        graft='{OUTDIR}/{sample}/xengsort/{sample}-graft.txt',
+        ambiguous='{OUTDIR}/{sample}/xengsort/{sample}-ambiguous.txt',
+        neither='{OUTDIR}/{sample}/xengsort/{sample}-neither.txt',
+        both='{OUTDIR}/{sample}/xengsort/{sample}-both.txt'
+    
     threads: config['threads']
-    run:
+    shell:
         """
-        a = len({snakemake.input})
-        for(i in range(a)):
-            shell(cat {snakemake.input[i]} |grep "@"|sed "s/@//g"|LC_ALL=C sort -u > {snakemake.output[i]})
+        cat {input.host} |grep "@"|sed "s/@//g"| sort -u > {output.host}
+        cat {input.graft} |grep "@"|sed "s/@//g"| sort -u > {output.graft}
+        cat {input.ambiguous} |grep "@"|sed "s/@//g"| sort -u > {output.ambiguous}
+        cat {input.neither} |grep "@"|sed "s/@//g"| sort -u > {output.neither}
+        cat {input.both} |grep "@"|sed "s/@//g"| sort -u > {output.both}
+
         """
 
 rule Mouse_Xenograft_BAM_Files:
@@ -160,15 +173,17 @@ rule Mouse_Xenograft_BAM_Files:
         ambiguous=temp('{OUTDIR}/{sample}/xengsort/mouse/{sample}-ambiguous.bam'),
         both=temp('{OUTDIR}/{sample}/xengsort/mouse/{sample}-both.bam')
     threads:config['threads']
-    run:
-        "java -jar {picard} FilterSamReads I={input.bam} O={output.host} READ_LIST_FILE={input.host} FILTER=includeReadList SORT_ORDER=queryname"
-        "java -jar {picard} FilterSamReads I={input.bam} O={output.ambiguous} READ_LIST_FILE={input.ambiguous} FILTER=includeReadList SORT_ORDER=queryname"
-        "java -jar {picard} FilterSamReads I={input.bam} O={output.both} READ_LIST_FILE={input.both} FILTER=includeReadList SORT_ORDER=queryname"
+    shell:
+        """
+        java -jar {picard} FilterSamReads I={input.bam} O={output.host} READ_LIST_FILE={input.host} FILTER=includeReadList
+        java -jar {picard} FilterSamReads I={input.bam} O={output.ambiguous} READ_LIST_FILE={input.ambiguous} FILTER=includeReadList
+        java -jar {picard} FilterSamReads I={input.bam} O={output.both} READ_LIST_FILE={input.both} FILTER=includeReadList
+        """
 
 rule Human_Xenograft_BAM_Files:
     input:
         bam='{OUTDIR}/{sample}/sorting/human_overlapped.bam',
-        host='{OUTDIR}/{sample}/xengsort/{sample}-host.txt',
+        graft='{OUTDIR}/{sample}/xengsort/{sample}-graft.txt',
         ambiguous='{OUTDIR}/{sample}/xengsort/{sample}-ambiguous.txt',
         both='{OUTDIR}/{sample}/xengsort/{sample}-both.txt'
 
@@ -177,10 +192,12 @@ rule Human_Xenograft_BAM_Files:
         ambiguous=temp('{OUTDIR}/{sample}/xengsort/human/{sample}-ambiguous.bam'),
         both=temp('{OUTDIR}/{sample}/xengsort/human/{sample}-both.bam')
     threads:config['threads']
-    run:
-        "java -jar {picard} FilterSamReads I={input.bam} O={output.host} READ_LIST_FILE={input.host} FILTER=includeReadList SORT_ORDER=queryname"
-        "java -jar {picard} FilterSamReads I={input.bam} O={output.ambiguous} READ_LIST_FILE={input.ambiguous} FILTER=includeReadList SORT_ORDER=queryname"
-        "java -jar {picard} FilterSamReads I={input.bam} O={output.both} READ_LIST_FILE={input.both} FILTER=includeReadList SORT_ORDER=queryname"
+    shell:
+        """
+        java -jar {picard} FilterSamReads I={input.bam} O={output.graft} READ_LIST_FILE={input.graft} FILTER=includeReadList
+        java -jar {picard} FilterSamReads I={input.bam} O={output.ambiguous} READ_LIST_FILE={input.ambiguous} FILTER=includeReadList
+        java -jar {picard} FilterSamReads I={input.bam} O={output.both} READ_LIST_FILE={input.both} FILTER=includeReadList
+        """
 
 rule filter_mm_both:
     input:
@@ -215,8 +232,7 @@ rule Merge_Mouse:
     output:
         bam=temp('{OUTDIR}/{sample}/mouse_merged.bam')
     shell:
-        "java -jar {picard} I={input.unique} I={input.host} I={input.both} I={input.ambiguous}"
-
+        "sambamba merge -t {threads} {output.bam} {input.unique} {input.host} {input.both} {input.ambiguous}"
 rule Merge_Human:
     input:
         unique='{OUTDIR}/{sample}/human_remaining.bam',
@@ -226,7 +242,7 @@ rule Merge_Human:
     output:
         bam=temp('{OUTDIR}/{sample}/human_merged.bam')
     shell:
-        "java -jar {picard} I={input.unique} I={input.graft} I={input.both} I={input.ambiguous}"
+        "sambamba merge -t {threads} {output.bam} {input.unique} {input.host} {input.both} {input.ambiguous}"
 
 rule Filter_MultiMapped_Reads:
     input:
