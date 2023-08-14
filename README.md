@@ -12,7 +12,7 @@ cd xenomake
 
 ## Create conda environment and build dependencies
 ```
-conda env create -n xenomake -f environment.yaml
+conda env create -n xenomake -f environment.yml
 conda activate xenomake
 ```
 ## Install Xengsort for Xenograft Read Sorting <br>
