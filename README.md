@@ -17,7 +17,6 @@ conda activate xenomake
 ```
 ## Install R Dependencies
 ```
-R
 install.packages("BiocManager")
 install.packages(c('Matrix','data.table'))
 BiocManager::install(c('rhdf5','AnnotationDbi','org.Hs.eg.db','org.Mm.eg.db'))
