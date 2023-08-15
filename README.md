@@ -17,8 +17,7 @@ conda activate xenomake
 ```
 ## Install R Dependencies
 ```
-install.packages("BiocManager")
-install.packages(c('Matrix','data.table'))
+install.packages(c('BiocManager','Matrix','data.table','R.utils'))
 BiocManager::install(c('rhdf5','AnnotationDbi','org.Hs.eg.db','org.Mm.eg.db'))
 ```
 ## Install Xengsort for Xenograft Read Sorting <br>
