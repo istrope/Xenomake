@@ -12,7 +12,7 @@ cd xenomake
 
 ## Create conda environment and build dependencies
 ```
-conda env create -n xenomake -f environment.yml
+conda env create -n xenomake -f environment.yaml
 conda activate xenomake
 ```
 ## Install R Dependencies
