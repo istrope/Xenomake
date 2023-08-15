@@ -1,12 +1,9 @@
 
 shhh <- suppressPackageStartupMessages # It's a library, so shhh!
 shhh(library(rhdf5))
-shhh(library(Matrix))
 shhh(library(org.Hs.eg.db))
 shhh(library(org.Mm.eg.db))
 shhh(library(AnnotationDbi))
-shhh(library(dplyr))
-shhh(library(data.table))
 write_hdf5 <- function(path, counts_file, organism, assembly) {
   #Read in counts file
   expr <- as.data.frame(data.table::fread(counts_file, sep = "\t", header = TRUE))
