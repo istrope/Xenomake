@@ -242,7 +242,7 @@ rule Merge_Human:
     output:
         bam=temp('{OUTDIR}/{sample}/human_merged.bam')
     shell:
-        "sambamba merge -t {threads} {output.bam} {input.unique} {input.host} {input.both} {input.ambiguous}"
+        "sambamba merge -t {threads} {output.bam} {input.unique} {input.graft} {input.both} {input.ambiguous}"
 
 rule Filter_MultiMapped_Reads:
     input:

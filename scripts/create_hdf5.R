@@ -1,31 +1,33 @@
 
-library(rhdf5)
-library(Matrix)
-library(org.Hs.eg.db)
-library(org.Mm.eg.db)
-library(AnnotationDbi)
-library(data.table)
+shhh <- suppressPackageStartupMessages # It's a library, so shhh!
+shhh(library(rhdf5))
+shhh(library(Matrix))
+shhh(library(org.Hs.eg.db))
+shhh(library(org.Mm.eg.db))
+shhh(library(AnnotationDbi))
+shhh(library(dplyr))
+shhh(library(data.table))
 write_hdf5 <- function(path, counts_file, organism, assembly) {
   #Read in counts file
-  expr <- as.data.frame(fread(counts_file, sep = "\t", header = TRUE))
+  expr <- as.data.frame(data.table::fread(counts_file, sep = "\t", header = TRUE))
   rownames(expr) <- expr$GENE
   expr <- expr[, 2:ncol(expr)]
 
   #Create Files for hdf5 write
   barcodes <- colnames(expr)
-  gene_name <- rownames(expr)
-  matrix <- Matrix(expr, sparse = TRUE)
-  feature_type <- "Gene Expression"
+  gene.name <- rownames(expr)
+  expr <- as.matrix(expr)
+  matrix <- Matrix::Matrix(expr, sparse = TRUE)
+  feature.type = "Gene Expression"
   #Create Ensembl Symbol group
-  if (organism == "mouse") {
-    gene_symbol <- mapIds(org.Mm.eg.db,
-                          keys = gene_name,
+  if(organism == "mouse") {
+    gene.symbol <- mapIds(org.Mm.eg.db,keys = gene.name,
                           column = "ENSEMBL",
                           keytype = "SYMBOL",
                           multiVals = "first")
     } else {
-    gene_symbol <- mapIds(org.Hs.eg.db,
-                          keys = gene_name,
+    gene.symbol <- mapIds(org.Hs.eg.db,
+                          keys = gene.name,
                           column = "ENSEMBL",
                           keytype = "SYMBOL",
                           multiVals = "first")
@@ -52,37 +54,37 @@ write_hdf5 <- function(path, counts_file, organism, assembly) {
   h5write(matrix@p,
           file = path,
           name = paste0(group, "/indptr"))
-
+  
   #Write Feature info in hdf5 file
   h5createGroup(path, file.path(group, "features"))
-  h5write(gene_symbol,
+  h5write(gene.symbol,
           file = path,
           name = paste0(group, "/features/id"))
-  h5write(gene_name,
+  h5write(gene.name,
           file = path,
           name = paste0(group, "/features/name"))
-  h5write(rep(feature_type, length.out = length(gene_name)),
-          file = path,
+  h5write(rep(feature.type, length.out = length(gene.name)),
+          file = path, 
           name = paste0(group, "/features/feature_type"))
   h5write("genome",
           file = path,
           name = paste0(group, "/features/_all_tag_keys"))
-  h5write(rep(assembly, length.out = length(gene_name)),
+  h5write(rep(assembly, length.out = length(gene.name)),
           file = path,
           name = paste0(group, "/features/genome"))
 }
 
 #CREATE OPTION PARSER FOR HDF5 FUNCTION NEES
 library(optparse)
-option_list <- list(
+option_list = list(
   make_option(c("-i", "--input"),
-    type = "character",
-    default = NULL,
-    help = "count matrix .tsv format (gene by cell matrix)",
-    metavar = "character"),
+    type="character",
+    default=NULL,
+    help="count matrix .tsv format (gene by cell matrix)",
+    metavar="character"),
 
   make_option(c("-o", "--out"),
-    type = "character",
+    type = "character", 
     default = "out.hdf5",
     help = "output file to store hdf5 structure",
     metavar = "character"),
@@ -100,7 +102,7 @@ option_list <- list(
     metavar = "character")
 )
 #GENERATE PARSER FROM COMMDANDLINE INPUTS
-opt_parser <- OptionParser(option_list = option_list)
+opt_parser <- OptionParser(option_list=option_list)
 opt <- parse_args(opt_parser)
 
 #CALL HDF5 FUNCTION

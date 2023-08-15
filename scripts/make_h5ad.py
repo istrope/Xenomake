@@ -1,34 +1,35 @@
 import scanpy as sc
 import pandas as pd
 import argparse
-
-def arguments(required=True):
-    parser=argparse.ArgumentParser(
+parser=argparse.ArgumentParser(
         allow_abbrev=False,
-        add_help=False
-    )
-    parser.add_argument(
+        add_help=False)
+
+parser.add_argument(
         '--counts',
         help='digital gene expression output file',
         type=str,
-        required=True
-    )
-    parser.add_argument(
+        required=True)
+
+parser.add_argument(
         '--spatial_coordinates',
         help='path to spatial barcode file',
         type=str,
-        required=True
-    )
-    parser.add_argument(
+        required=True)
+
+parser.add_argument(
         '--output',
         help='output file path',
         type=str,
         required=True)
-args = arguments()
+
+args = parser.parse_args()
 
 adata = sc.read(args.counts)
+adata = adata.transpose()
 adata.var_names_make_unique()
 positions = pd.read_csv(args.spatial_coordinates,header=None)
+positions = positions.iloc[:,1:]
 positions.columns = [
               'barcode',
               'in_tissue',

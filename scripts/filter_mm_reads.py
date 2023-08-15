@@ -13,9 +13,6 @@ counted_regions = ['UTR', 'CODING']
 
 def select_alignment(alignments):
     read_names = [aln.query_name for aln in alignments]
-    if read_names.count(read_names[0]) != len(read_names):
-        print(read_names)
-        raise Exception(f'input alignments do not come from the same read')
 
     def is_exonic(aln):
         if not aln.has_tag('XF'):
