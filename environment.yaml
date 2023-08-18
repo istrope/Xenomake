@@ -11,9 +11,7 @@ dependencies:
     - star>=2.7.1a
     - samtools>=1.13
     - sambamba>=0.6.8
-    - bcl2fastq2>=2.19
     - pip>=21.1
-    - r-base>=4.0.3
     - pysam>=0.16.0.1
     - pot
     - openjdk==11.0.15
@@ -33,3 +31,5 @@ dependencies:
         - pytest
         - zarr
         - numba>=0.56
+        - mygene
+        - h5py
