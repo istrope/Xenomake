@@ -15,5 +15,3 @@ Xenomake's structure is based on Snakemake and includes scripts to handle multi-
 
 # Installation and Usage for Xeomake
 check: https://github.com/Biivy/xenomake/wiki
-
-google-site-verification: google5209a1fe17de5a5c.html
