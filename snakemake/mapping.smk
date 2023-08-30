@@ -2,7 +2,7 @@
 Author: Ivy Strope
 Creation: 6/16/23
 Contact: benjamin.strope@bcm.edu
-Last Edit: 6/20/23
+Last Edit: 8/18/23
 '''
 #############################################
 #       SPECIFY PARAMETERS
@@ -28,54 +28,60 @@ rule FastqtoSam:
         read1=config['r1'],
         read2=config['r2']
     output:
-        '{OUTDIR}/{sample}/preprocess/unaligned.bam'
-    threads: config['threads']
+        pipe('{OUTDIR}/{sample}/preprocess/unaligned.bam')
     params:
-        "PLATFORM=illumina SORT_ORDER=queryname SAMPLE_NAME={sample} "
+        "PLATFORM=illumina SORT_ORDER=queryname SAMPLE_NAME={sample}"
+    log:
+        stdout='{OUTDIR}/{sample}/logs/FastqToSam.log'
     shell:
         """
-        java -jar {picard} FastqToSam F1={input.read1} F2={input.read2} O={output} {params}
+        java -jar {picard} FastqToSam F1={input.read1} F2={input.read2} O={output} {params} &> {log.stdout}
         """
 
 rule TagCellBarcodes:
     input:
         '{OUTDIR}/{sample}/preprocess/unaligned.bam'
     output:
-        bam=temp('{OUTDIR}/{sample}/preprocess/unaligned_tagged_cell.bam'),
+        bam=pipe('{OUTDIR}/{sample}/preprocess/unaligned_tagged_cell.bam'),
         summary='{OUTDIR}/{sample}/preprocess/tag_cell_barcodes.summary'
     params:
         cell_barcode_flags
-    threads: config['threads']
+    log:
+        stdout='{OUTDIR}/{sample}/logs/TagCellBarcodes.log'
     shell:
         """
         {dropseq}/TagBamWithReadSequenceExtended INPUT={input} OUTPUT={output.bam} \
-        SUMMARY={output.summary} {params}
+        SUMMARY={output.summary} {params} &> {log.stdout}
         """
 rule TagUMI:
     input:
         '{OUTDIR}/{sample}/preprocess/unaligned_tagged_cell.bam',
     output:
-        bam=temp('{OUTDIR}/{sample}/preprocess/unaligned_tagged_molecular.bam'),
+        bam=pipe('{OUTDIR}/{sample}/preprocess/unaligned_tagged_molecular.bam'),
         summary='{OUTDIR}/{sample}/preprocess/tag_umi.summary',
     params:
         umi_flags
-    threads: config['threads']
+    log:
+        stdout='{OUTDIR}/{sample}/logs/TagUMI.log'
     shell:
         """
-        {dropseq}/TagBamWithReadSequenceExtended INPUT={input} OUTPUT={output.bam} SUMMARY={output.summary} {params}
+        {dropseq}/TagBamWithReadSequenceExtended INPUT={input} OUTPUT={output.bam} \
+        SUMMARY={output.summary} {params} &> {log.stdout}
         """
 rule TrimAdapter:
     input:
         '{OUTDIR}/{sample}/preprocess/unaligned_tagged_molecular.bam'
     output:
-        bam=temp('{OUTDIR}/{sample}/preprocess/tagged_trimmed.bam'),
+        bam=pipe('{OUTDIR}/{sample}/preprocess/tagged_trimmed.bam'),
         summary='{OUTDIR}/{sample}/preprocess/trimmed_starting_sequence.summary'
     params:
         "SEQUENCE=AAGCAGTGGTATCAACGCAGAGTGAATGGG MISMATCHES=0 NUM_BASES=5"
-    threads: config['threads']
+    log:
+        stdout='{OUTDIR}/{sample}/logs/TrimAdapter.log'
     shell:
         """
-        {dropseq}/TrimStartingSequence INPUT={input} OUTPUT={output.bam} OUTPUT_SUMMARY={output.summary} {params}
+        {dropseq}/TrimStartingSequence INPUT={input} OUTPUT={output.bam} \
+        OUTPUT_SUMMARY={output.summary} {params} &> {log.stdout}
         """
 
 
@@ -87,35 +93,27 @@ rule PolyATrimmer:
         summary='{OUTDIR}/{sample}/preprocess/polyATrimmer.summary'
     params:
         "MISMATCHES=0 NUM_BASES=6"
-    threads: config['threads']
+    log:
+        stdout='{OUTDIR}/{sample}/logs/FastqToSam.log'
     shell:
         """
-        {dropseq}/PolyATrimmer OUTPUT_SUMMARY={output.summary} INPUT={input} OUTPUT={output.bam} {params}
+        {dropseq}/PolyATrimmer INPUT={input} OUTPUT={output.bam} \
+        {params} OUTPUT_SUMMARY={output.summary} &> {log.stdout}
         """
 
 rule Generate_SE_Ubam:
     input:
-        bam='{OUTDIR}/{sample}/preprocess/tagged_polyA_adapter_trimmed.bam'
+        bam='{OUTDIR}/{sample}/preprocess/tagged_polyA_adapter_trimmed.bam',
     output:
-        bam=temp('{OUTDIR}/{sample}/preprocess/unaligned_se.bam')
+        bam=temp('{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam'),
+        header=temp('{OUTDIR}/{sample}/preprocess/fixed_header.sam')
     threads: config['threads']
     shell:
         """
-        samtools view {input.bam} | awk "NR%2==0" | samtools view -b - > {output.bam}
+        sambamba view -t {threads} -H {input.bam} > {output.header}
+        sambamba view -t {threads} {input.bam} | awk "NR%2==0" | samtools view -@ {threads} -b - | samtools reheader {output.header} /dev/stdin > {output.bam}
         """
 
-rule Fix_Header:
-    input:
-        bam='{OUTDIR}/{sample}/preprocess/unaligned_se.bam',
-        header='{OUTDIR}/{sample}/preprocess/unaligned.bam'
-    output:
-        bam='{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam'
-    threads: config['threads']
-    shell:
-        """
-        samtools view -H {input.header} | \
-        samtools reheader - {input.bam} > {output.bam}
-        """
 ############################################
 #      RUN STAR INDEX AND ALIGNMENT
 ############################################
@@ -154,15 +152,19 @@ rule STAR_Human:
         index='species/human/star_index/'
     output:
         aln=temp('{OUTDIR}/{sample}/mapping/human_Aligned.out.bam'),
-        sj='{OUTDIR}/{sample}/mapping/human_SJ.out.tab',
-        log_final='{OUTDIR}/{sample}/mapping/human_Log.final.out',
-        log_progress='{OUTDIR}/{sample}/mapping/human_Log.progress.out',
-        log='{OUTDIR}/{sample}/mapping/human_Log.out',
     params:
         file_prefix = '{OUTDIR}/{sample}/mapping/human_',
         annotation='species/human/annotation.gtf',
         aln=star_mapping_flags,
-        tmpdir = '{OUTDIR}/{sample}mapping/mouse__STAR*'
+        tmpdir = '{OUTDIR}/{sample}/mapping/human__STARgenome',
+        star_log = '{OUTDIR}/{sample}/logs',
+        summary = '{OUTDIR}/{sample}/qc',
+    log:
+        log_progress='{OUTDIR}/{sample}/mapping/human_Log.progress.out',
+        params='{OUTDIR}/{sample}/mapping/human_Log.out',
+        sj='{OUTDIR}/{sample}/mapping/human_SJ.out.tab',
+        log_final='{OUTDIR}/{sample}/mapping/human_Log.final.out',
+        stdout='{OUTDIR}/{sample}/logs/human_TagGeneFunction.log'
     threads:
         config['threads']
     shell:
@@ -174,8 +176,11 @@ rule STAR_Human:
             {params.aln} \
             --runThreadN {threads} | \
             python scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | \
-            sambamba sort -n /dev/stdin -o /dev/stdout | \
-            {dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation}
+            sambamba sort -t {threads} -n /dev/stdin -o /dev/stdout | \
+            {dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation} &> {log.stdout}
+        rm -r {params.tmpdir}
+        mv {log.params} {log.log_progress} {log.sj} {params.star_log}
+        mv {log.log_final} {params.summary}
         """
 
 rule STAR_Mouse:
@@ -183,16 +188,20 @@ rule STAR_Mouse:
         ubam='{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam',
         index='species/mouse/star_index/'
     output:
-        aln=temp('{OUTDIR}/{sample}/mapping/mouse_Aligned.out.bam'),
-        sj='{OUTDIR}/{sample}/mapping/mouse_SJ.out.tab',
-        log_final='{OUTDIR}/{sample}/mapping/mouse_Log.final.out',
-        log_progress='{OUTDIR}/{sample}/mapping/mouse_Log.progress.out',
-        log='{OUTDIR}/{sample}/mapping/mouse_Log.out'
+        aln='{OUTDIR}/{sample}/mapping/mouse_Aligned.out.bam',
     params:
         file_prefix = '{OUTDIR}/{sample}/mapping/mouse_',
         annotation='species/mouse/annotation.gtf',
         aln=star_mapping_flags,
-        tmpdir = '{OUTDIR}/{sample}mapping/mouse__STAR*'
+        tmpdir = '{OUTDIR}/{sample}/mapping/mouse__STARgenome',
+        star_log = '{OUTDIR}/{sample}/logs',
+        summary = '{OUTDIR}/{sample}/qc',
+    log:
+        log_progress='{OUTDIR}/{sample}/mapping/mouse_Log.progress.out',
+        params='{OUTDIR}/{sample}/mapping/mouse_Log.out',
+        sj='{OUTDIR}/{sample}/mapping/mouse_SJ.out.tab',
+        log_final='{OUTDIR}/{sample}/mapping/mouse_Log.final.out',
+        stdout='{OUTDIR}/{sample}/logs/mouse_TagGeneFunction.log'
     threads:
         config['threads']
     shell:
@@ -204,8 +213,12 @@ rule STAR_Mouse:
             {params.aln} \
             --runThreadN {threads} | \
             python scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | 
-            sambamba sort -n /dev/stdin -o /dev/stdout | \
-            {dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation}
+            sambamba sort -t {threads} -n /dev/stdin -o /dev/stdout | \
+            {dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation} &> {log.stdout}
+        rm -r {params.tmpdir}
+        mv {log.params} {log.log_progress} {log.sj} {params.star_log}
+        mkdir {params.summary}        
+        mv {log.log_final} {params.summary}
         """
 
 

@@ -3,7 +3,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='find overlapping mapped reads between organisms')
 parser.add_argument('--human',help='human mapped bam')
-parser.add_argument('--mosue',help='mouse mapped bam')
+parser.add_argument('--mouse',help='mouse mapped bam')
 parser.add_argument('--out',help='text file of overlapped reads')
 args = parser.parse_args()
 
