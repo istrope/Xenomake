@@ -33,6 +33,20 @@ def get_args(required=True):
         type=str
     )
     parser.add_argument(
+        '--ambiguous',
+        help = 'handle multimap from "both" and "ambiguous" output reads (Must be boolean True/False)',
+        required=False,
+        default=True,
+        type=bool
+    )
+    parser.add_argument(
+        '--downstream',
+        help = 'Performs Scanpy Processing of Data (Must be boolean True/False)',
+        required = False,
+        default = True,
+        type = bool
+    )
+    parser.add_argument(
         '--barcode',
         help='visium barcode file provided by 10X genomics',
         default='barcodes/visium-v2.txt',
@@ -56,6 +70,24 @@ def get_args(required=True):
         required=False,
         default=8,
         type=int
+    )
+    parser.add_argument(
+        '--reference',
+        help='name of reference (default: genome)',
+        type=str,
+        default='genome'
+    )
+    parser.add_argument(
+        '--mouse_assembly',
+        help='name of mouse assembly version used (default=mm10)',
+        default='mm10',
+        type=str
+    )
+    parser.add_argument(
+        '--human_assembly',
+        help='human_assembly version (default=hg38)',
+        type=str,
+        default='hg38'
     )
     args = parser.parse_args()
     return args
