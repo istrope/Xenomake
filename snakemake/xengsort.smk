@@ -3,7 +3,6 @@
 Author: Ivy Strope
 Created: 5/31/23
 Contact: benjamin.strope@bcm.edu
-Date Created: 6/20/23
 Last Edited: 8/8/23
 '''
  ############################################
