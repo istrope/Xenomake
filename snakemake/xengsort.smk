@@ -3,6 +3,7 @@
 Author: Ivy Strope
 Created: 5/31/23
 Contact: benjamin.strope@bcm.edu
+Date Created: 6/20/23
 Last Edited: 8/8/23
 '''
  ############################################
@@ -17,7 +18,7 @@ sample=config['sample']
 threads=config['threads']
 dropseq=config['dropseq_tools']
 picard=config['picard']
-
+repo=config['repository']
 #############################################
 #       SPECIFY PARAMETERS
 #############################################
@@ -33,7 +34,7 @@ rule Find_Overlap_Reads:
         temp('{OUTDIR}/{sample}/sorting/overlapped.txt')
     threads: config['threads']
     shell:
-        "python scripts/overlapped_reads.py --human {input.human} --mouse {input.mouse} --out {output}"
+        "python {repo}/scripts/overlapped_reads.py --human {input.human} --mouse {input.mouse} --out {output}"
 
 rule Remove_Overlapped_Reads:
     input:
@@ -48,8 +49,8 @@ rule Remove_Overlapped_Reads:
         stdout='{OUTDIR}/{sample}/logs/subset_unique_reads.log'
     shell:
         """
-        java -jar {picard} FilterSamReads I={input.mouse_bam} O={output.mouse} READ_LIST_FILE={input.overlapped_reads} FILTER=excludeReadList &>> {log.stdout}
-        java -jar {picard} FilterSamReads I={input.human_bam} O={output.human} READ_LIST_FILE={input.overlapped_reads} FILTER=excludeReadList &>> {log.stdout}
+        java -jar {repo}/{picard} FilterSamReads I={input.mouse_bam} O={output.mouse} READ_LIST_FILE={input.overlapped_reads} FILTER=excludeReadList &>> {log.stdout}
+        java -jar {repo}/{picard} FilterSamReads I={input.human_bam} O={output.human} READ_LIST_FILE={input.overlapped_reads} FILTER=excludeReadList &>> {log.stdout}
         """
 
 rule Subset_Overlapped:
@@ -64,8 +65,8 @@ rule Subset_Overlapped:
         stdout='{OUTDIR}/{sample}/logs/subset_overlapped_reads.log'    
     shell:
         """
-        java -jar {picard} FilterSamReads I={input.mouse_bam} O={output.mouse_bam} READ_LIST_FILE={input.readlist} FILTER=includeReadList &>> {log.stdout}
-        java -jar {picard} FilterSamReads I={input.human_bam} O={output.human_bam} READ_LIST_FILE={input.readlist} FILTER=includeReadList &>> {log.stdout}
+        java -jar {repo}/{picard} FilterSamReads I={input.mouse_bam} O={output.mouse_bam} READ_LIST_FILE={input.readlist} FILTER=includeReadList &>> {log.stdout}
+        java -jar {repo}/{picard} FilterSamReads I={input.human_bam} O={output.human_bam} READ_LIST_FILE={input.readlist} FILTER=includeReadList &>> {log.stdout}
         """
 #############################################
 #           RUN XENOGRAFT SORTING
@@ -105,7 +106,7 @@ rule Xengsort_Clasify:
         prefetch=1
     shell:
         """
-        java -jar {picard} SamToFastq I={input.bam} FASTQ=/dev/stdout | \
+        java -jar {repo}/{picard} SamToFastq I={input.bam} FASTQ=/dev/stdout | \
         xengsort {params.debug} classify \
         --index {input.index} \
         --fastq /dev/stdin \

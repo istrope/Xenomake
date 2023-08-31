@@ -11,6 +11,7 @@ Last Edited: 8/18/23
 configfile: 'config.yaml'
 sample=config['sample']
 OUTDIR=config['outdir']
+repo=config['repository']
 #############################################
 #           FILTER_MULTIMAPPED
 #############################################
@@ -27,10 +28,10 @@ rule Mouse_Xenograft_BAM_Files:
         both=temp('{OUTDIR}/{sample}/xengsort/mouse/{sample}-both.bam')
     shell:
         """
-	java -jar {picard} FilterSamReads I={input.bam} O={output.host} READ_LIST_FILE={input.host} FILTER=includeReadList SORT_ORDER=queryname
-        java -jar {picard} FilterSamReads I={input.bam} O={output.ambiguous} READ_LIST_FILE={input.ambiguous} FILTER=includeReadList SORT_ORDER=queryname
-        java -jar {picard} FilterSamReads I={input.bam} O={output.both} READ_LIST_FILE={input.both} FILTER=includeReadList SORT_ORDER=queryname
-	"""
+        java -jar {repo}/{picard} FilterSamReads I={input.bam} O={output.host} READ_LIST_FILE={input.host} FILTER=includeReadList SORT_ORDER=queryname
+        java -jar {repo}/{picard} FilterSamReads I={input.bam} O={output.ambiguous} READ_LIST_FILE={input.ambiguous} FILTER=includeReadList SORT_ORDER=queryname
+        java -jar {repo}/{picard} FilterSamReads I={input.bam} O={output.both} READ_LIST_FILE={input.both} FILTER=includeReadList SORT_ORDER=queryname
+        """
 
 rule Human_Xenograft_BAM_Files:
     input:
@@ -44,10 +45,10 @@ rule Human_Xenograft_BAM_Files:
         both=temp('{OUTDIR}/{sample}/xengsort/human/{sample}-both.bam')
     shell:
         """
-	java -jar {picard} FilterSamReads I={input.bam} O={output.graft} READ_LIST_FILE={input.host} FILTER=includeReadList SORT_ORDER=queryname
-        java -jar {picard} FilterSamReads I={input.bam} O={output.ambiguous} READ_LIST_FILE={input.ambiguous} FILTER=includeReadList SORT_ORDER=queryname
-        java -jar {picard} FilterSamReads I={input.bam} O={output.both} READ_LIST_FILE={input.both} FILTER=includeReadList SORT_ORDER=queryname
-	"""
+        java -jar {repo}/{picard} FilterSamReads I={input.bam} O={output.graft} READ_LIST_FILE={input.host} FILTER=includeReadList SORT_ORDER=queryname
+        java -jar {repo}/{picard} FilterSamReads I={input.bam} O={output.ambiguous} READ_LIST_FILE={input.ambiguous} FILTER=includeReadList SORT_ORDER=queryname
+        java -jar {repo}/{picard} FilterSamReads I={input.bam} O={output.both} READ_LIST_FILE={input.both} FILTER=includeReadList SORT_ORDER=queryname
+        """
 
 rule filter_mm_both:
     input:
@@ -57,7 +58,7 @@ rule filter_mm_both:
         mouse=temp('{OUTDIR}/{sample}/xengsort/mouse/{sample}-both.filtered.bam'),
         human=temp('{OUTDIR}/{sample}/xengsort/human/{sample}-both.filtered.bam')
     shell:
-        "python scripts/filter_mm_reads_both.py --in1 {input.human} --in2 {input.mouse} --out1 {output.human} --out2 {output.mouse}"
+        "python {repo}/scripts/filter_mm_reads_both.py --in1 {input.human} --in2 {input.mouse} --out1 {output.human} --out2 {output.mouse}"
 
 rule filter_mm_ambiguous:
     input:
@@ -67,7 +68,7 @@ rule filter_mm_ambiguous:
         mouse=temp('{OUTDIR}/{sample}/xengsort/mouse/{sample}-ambiguous.filtered.bam'),
         human=temp('{OUTDIR}/{sample}/xengsort/human/{sample}-ambiguous.filtered.bam')
     shell:
-        "python scripts/filter_mm_reads_both.py --in1 {input.human} --in2 {input.mouse} --out1 {output.human} --out2 {output.mouse}"
+        "python {repo}/scripts/filter_mm_reads_both.py --in1 {input.human} --in2 {input.mouse} --out1 {output.human} --out2 {output.mouse}"
 
 
 #############################################
@@ -111,7 +112,7 @@ rule Filter_MultiMapped_Human:
     log:
         '{OUTDIR}/{sample}/log/filter_mm.log'
     shell:
-        "python scripts/filter_mm_reads.py --in-bam {input} --out-bam {output} &>> {log.stdout}"
+        "python {repo}/scripts/filter_mm_reads.py --in-bam {input} --out-bam {output} &>> {log.stdout}"
 
 rule Filter_MultiMapped_Mouse:
     input:
@@ -121,4 +122,4 @@ rule Filter_MultiMapped_Mouse:
     log:
         '{OUTDIR}/{sample}/log/filter_mm.log'
     shell:
-        "python scripts/filter_mm_reads.py --in-bam {input} --out-bam {output} &>> {log.stdout}"
+        "python {repo}/scripts/filter_mm_reads.py --in-bam {input} --out-bam {output} &>> {log.stdout}"

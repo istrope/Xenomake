@@ -19,7 +19,7 @@ sample=config['sample']
 threads=config['threads']
 dropseq=config['dropseq_tools']
 picard=config['picard']
-
+repo=config['repository']
 ############################################
 #     TAG,TRIM,AND PREPROCESS READS
 ############################################
@@ -35,7 +35,7 @@ rule FastqtoSam:
         stdout='{OUTDIR}/{sample}/logs/FastqToSam.log'
     shell:
         """
-        java -jar {picard} FastqToSam F1={input.read1} F2={input.read2} O={output} {params} &> {log.stdout}
+        java -jar {repo}/{picard} FastqToSam F1={input.read1} F2={input.read2} O={output} {params} &> {log.stdout}
         """
 
 rule TagCellBarcodes:
@@ -50,7 +50,7 @@ rule TagCellBarcodes:
         stdout='{OUTDIR}/{sample}/logs/TagCellBarcodes.log'
     shell:
         """
-        {dropseq}/TagBamWithReadSequenceExtended INPUT={input} OUTPUT={output.bam} \
+        {repo}/{dropseq}/TagBamWithReadSequenceExtended INPUT={input} OUTPUT={output.bam} \
         SUMMARY={output.summary} {params} &> {log.stdout}
         """
 rule TagUMI:
@@ -65,7 +65,7 @@ rule TagUMI:
         stdout='{OUTDIR}/{sample}/logs/TagUMI.log'
     shell:
         """
-        {dropseq}/TagBamWithReadSequenceExtended INPUT={input} OUTPUT={output.bam} \
+        {repo}/{dropseq}/TagBamWithReadSequenceExtended INPUT={input} OUTPUT={output.bam} \
         SUMMARY={output.summary} {params} &> {log.stdout}
         """
 rule TrimAdapter:
@@ -80,7 +80,7 @@ rule TrimAdapter:
         stdout='{OUTDIR}/{sample}/logs/TrimAdapter.log'
     shell:
         """
-        {dropseq}/TrimStartingSequence INPUT={input} OUTPUT={output.bam} \
+        {repo}/{dropseq}/TrimStartingSequence INPUT={input} OUTPUT={output.bam} \
         OUTPUT_SUMMARY={output.summary} {params} &> {log.stdout}
         """
 
@@ -97,7 +97,7 @@ rule PolyATrimmer:
         stdout='{OUTDIR}/{sample}/logs/FastqToSam.log'
     shell:
         """
-        {dropseq}/PolyATrimmer INPUT={input} OUTPUT={output.bam} \
+        {repo}/{dropseq}/PolyATrimmer INPUT={input} OUTPUT={output.bam} \
         {params} OUTPUT_SUMMARY={output.summary} &> {log.stdout}
         """
 
@@ -110,7 +110,7 @@ rule Generate_SE_Ubam:
     threads: config['threads']
     shell:
         """
-        sambamba view -t {threads} -H {input.bam} > {output.header}
+        sambamba view -t {threads} -H {input.bam} > {output.header} 
         sambamba view -t {threads} {input.bam} | awk "NR%2==0" | samtools view -@ {threads} -b - | samtools reheader {output.header} /dev/stdin > {output.bam}
         """
 
@@ -175,9 +175,9 @@ rule STAR_Human:
             --sjdbGTFfile {params.annotation} \
             {params.aln} \
             --runThreadN {threads} | \
-            python scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | \
+            python {repo}/scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | \
             sambamba sort -t {threads} -n /dev/stdin -o /dev/stdout | \
-            {dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation} &> {log.stdout}
+            {repo}/{dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation} &> {log.stdout}
         rm -r {params.tmpdir}
         mv {log.params} {log.log_progress} {log.sj} {params.star_log}
         mv {log.log_final} {params.summary}
@@ -212,9 +212,9 @@ rule STAR_Mouse:
             --sjdbGTFfile {params.annotation} \
             {params.aln} \
             --runThreadN {threads} | \
-            python scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | 
+            {repo}/python scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | 
             sambamba sort -t {threads} -n /dev/stdin -o /dev/stdout | \
-            {dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation} &> {log.stdout}
+            {repo}/{dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation} &> {log.stdout}
         rm -r {params.tmpdir}
         mv {log.params} {log.log_progress} {log.sj} {params.star_log}
         mkdir {params.summary}        

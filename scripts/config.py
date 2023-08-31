@@ -1,4 +1,3 @@
-import os
 import subprocess
 import argparse
 def get_args(required=True):
@@ -93,11 +92,18 @@ def get_args(required=True):
     return args
 fn = get_args()
 
+#Search for repository directory
+value = subprocess.check_output('find ~/ -type d -name Xenomake',shell=True)
+value = value[:-1] #remove newline character
+repo = {'repo':value.decode('utf-8')}
+
 #Write parser object to config.yaml file to be used in snakemake commands
 import yaml
 file=open('config.yaml','w')
 yaml.dump(fn,file)
+yaml.dump(repo,file)
 file.close()
+
 
 with open('config.yaml', 'r') as fin:
     data = fin.read().splitlines(True)

@@ -7,6 +7,7 @@ Last Edited: 8/17/23
  #Determine how to change this based upon input
 sample=config['sample']
 OUTDIR=config['outdir']
+repo=config['repository']
 configfile: 'config.yaml'
 
 rule Human_Downstream:
@@ -15,7 +16,7 @@ rule Human_Downstream:
     output:
         '{OUTDIR}/{sample}/final/{sample}_human_processed.h5ad'
     shell:
-        'python scripts/Downstream.py --input {input} --output {output}'
+        'python {repo}/scripts/Downstream.py --input {input} --output {output}'
 
 rule Mouse_Downstream:
     input:
@@ -23,4 +24,4 @@ rule Mouse_Downstream:
     output:
         '{OUTDIR}/{sample}/final/{sample}_mouse_processed.h5ad'
     shell:
-        'python scripts/Downstream.py --input {input} --output {output}'
+        'python {repo}/scripts/Downstream.py --input {input} --output {output}'

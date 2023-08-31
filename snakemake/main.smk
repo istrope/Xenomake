@@ -22,6 +22,7 @@ sample=config['sample']
 threads=config['threads']
 dropseq=config['dropseq_tools']
 picard=config['picard']
+repo=config['repository']
 
 #############################################
 #       SPECIFY PARAMETERS

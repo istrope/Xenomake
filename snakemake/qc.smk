@@ -10,7 +10,7 @@ Last Edited: 8/22/23
 configfile: 'config.yaml'
 sample=config['sample']
 OUTDIR=config['outdir']
-
+repo=config['repository']
 #############################################
 #       SPECIFY PARAMETERS
 ##############################################
@@ -31,6 +31,6 @@ rule Expression_QC:
         mouse = out_prefix + 'mouse'
     shell:
         """
-        python scripts/qc.py --input {input.human} --out {params.human}
-        python scripts/qc.py --input {input.mouse} --out {params.mouse}
+        python {repo}/scripts/qc.py --input {input.human} --out {params.human}
+        python {repo}/scripts/qc.py --input {input.mouse} --out {params.mouse}
         """

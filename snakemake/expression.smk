@@ -12,7 +12,7 @@ sample=config['sample']
 threads=config['threads']
 dropseq=config['dropseq_tools']
 picard=config['picard']
-
+repo=config['repository']
 #############################################
 #           CREATE COUNT MATRIX
 #############################################
@@ -33,7 +33,7 @@ rule DGE_Mouse:
         locus = locus_1 if config['genic_only'] else locus_2
     shell:
         """
-        {dropseq}/DigitalExpression I= {input.bam} O={output.counts} \
+        {repo}/{dropseq}/DigitalExpression I= {input.bam} O={output.counts} \
         SUMMARY={output.summary} CELL_BC_FILE={input.barcodes} {params.default} \
         {params.locus} &> {log.stdout}
         """
@@ -52,7 +52,7 @@ rule DGE_Human:
         stdout='{OUTDIR}/{sample}/logs/human_dge.log'
     shell:
         """
-        {dropseq}/DigitalExpression I={input.bam} O={output.counts} \
+        {repo}/{dropseq}/DigitalExpression I={input.bam} O={output.counts} \
         SUMMARY={output.summary} CELL_BC_FILE={input.barcodes} {params.default} \
         {params.locus} &> {log.stdout}
         """
@@ -68,7 +68,7 @@ rule create_tissue_file:
     threads: config['threads']
     shell:
         """
-        python scripts/spatial_barcode.py --counts {input.dge} \
+        python {repo}/scripts/spatial_barcode.py --counts {input.dge} \
         --output {output.spatial} \
         --spatial_coordinates {params.coordinates}
         """
@@ -81,7 +81,7 @@ rule HDF5_Human:
     threads: config['threads']
     shell:
         """
-        python scripts/create_hdf5.py --counts {input.counts} --output {output.hdf5} --species human --assembly hg38
+        python {repo}/scripts/create_hdf5.py --counts {input.counts} --output {output.hdf5} --species human --assembly hg38
         """
         
 rule HDF5_Mouse:
@@ -92,7 +92,7 @@ rule HDF5_Mouse:
     threads: config['threads']
     shell:
         """
-        python scripts/create_hdf5.py --counts {input.counts} --output {output.hdf5} --species mouse --assembly mm10
+        python {repo}/scripts/create_hdf5.py --counts {input.counts} --output {output.hdf5} --species mouse --assembly mm10
         """
 
 #Create Anndata object for data storage and subsequent processing
@@ -105,7 +105,7 @@ rule H5ad_Human:
     threads: config['threads']
     shell:
         """
-        python scripts/make_h5ad.py --counts {input.counts} \
+        python {repo}/scripts/make_h5ad.py --counts {input.counts} \
         --output {output.h5ad} \
         --spatial_coordinates {input.tissue_file}
         """
@@ -119,7 +119,7 @@ rule H5ad_Mouse:
     threads: config['threads']
     shell:
         """
-        python scripts/make_h5ad.py --counts {input.counts} \
+        python {repo}/scripts/make_h5ad.py --counts {input.counts} \
         --output {output.h5ad} \
         --spatial_coordinates {input.tissue_file}
         """
