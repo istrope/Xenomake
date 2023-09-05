@@ -30,5 +30,5 @@ dependencies:
         - pytest
         - zarr
         - numba>=0.56
-        - mygene
+        - jsonargparse>=4.24.0
         - h5py
