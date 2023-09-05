@@ -27,4 +27,4 @@ conda activate xenomake   # activate conda environment if not done already
 pip install -e .
 ```
 # Installation and Usage for Xeomake
-check: https://github.com/Biivy/xenomake/wiki
+check: https://github.com/istrope/Xenomake/wiki
