@@ -23,82 +23,29 @@ repo=config['repository']
 ############################################
 #     TAG,TRIM,AND PREPROCESS READS
 ############################################
-rule FastqtoSam:
+
+rule Preprocess:
     input:
         read1=config['r1'],
         read2=config['r2']
     output:
-        pipe('{OUTDIR}/{sample}/preprocess/unaligned.bam')
+        processed_bam = '{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam',
+        summary='{OUTDIR}/{sample}/logs/Preprocess.summary'
     params:
-        "PLATFORM=illumina SORT_ORDER=queryname SAMPLE_NAME={sample}"
+        Fastq = "PLATFORM=illumina SORT_ORDER=queryname SAMPLE_NAME={sample}",
+        tagcb = cell_barcode_flags,
+        tagumi = umi_flags,
+        adapter = "SEQUENCE=AAGCAGTGGTATCAACGCAGAGTGAATGGG MISMATCHES=0 NUM_BASES=5",
+        polyA = "MISMATCHES=0 NUM_BASES=6"
     log:
-        stdout='{OUTDIR}/{sample}/logs/FastqToSam.log'
+        stdout='{OUTDIR}/{sample}/logs/Preprocess.log'
     shell:
         """
-        java -jar {repo}/{picard} FastqToSam F1={input.read1} F2={input.read2} O={output} {params} &> {log.stdout}
-        """
-
-rule TagCellBarcodes:
-    input:
-        '{OUTDIR}/{sample}/preprocess/unaligned.bam'
-    output:
-        bam=pipe('{OUTDIR}/{sample}/preprocess/unaligned_tagged_cell.bam'),
-        summary='{OUTDIR}/{sample}/preprocess/tag_cell_barcodes.summary'
-    params:
-        cell_barcode_flags
-    log:
-        stdout='{OUTDIR}/{sample}/logs/TagCellBarcodes.log'
-    shell:
-        """
-        {repo}/{dropseq}/TagBamWithReadSequenceExtended INPUT={input} OUTPUT={output.bam} \
-        SUMMARY={output.summary} {params} &> {log.stdout}
-        """
-rule TagUMI:
-    input:
-        '{OUTDIR}/{sample}/preprocess/unaligned_tagged_cell.bam',
-    output:
-        bam=pipe('{OUTDIR}/{sample}/preprocess/unaligned_tagged_molecular.bam'),
-        summary='{OUTDIR}/{sample}/preprocess/tag_umi.summary',
-    params:
-        umi_flags
-    log:
-        stdout='{OUTDIR}/{sample}/logs/TagUMI.log'
-    shell:
-        """
-        {repo}/{dropseq}/TagBamWithReadSequenceExtended INPUT={input} OUTPUT={output.bam} \
-        SUMMARY={output.summary} {params} &> {log.stdout}
-        """
-rule TrimAdapter:
-    input:
-        '{OUTDIR}/{sample}/preprocess/unaligned_tagged_molecular.bam'
-    output:
-        bam=pipe('{OUTDIR}/{sample}/preprocess/tagged_trimmed.bam'),
-        summary='{OUTDIR}/{sample}/preprocess/trimmed_starting_sequence.summary'
-    params:
-        "SEQUENCE=AAGCAGTGGTATCAACGCAGAGTGAATGGG MISMATCHES=0 NUM_BASES=5"
-    log:
-        stdout='{OUTDIR}/{sample}/logs/TrimAdapter.log'
-    shell:
-        """
-        {repo}/{dropseq}/TrimStartingSequence INPUT={input} OUTPUT={output.bam} \
-        OUTPUT_SUMMARY={output.summary} {params} &> {log.stdout}
-        """
-
-
-rule PolyATrimmer:
-    input:
-        '{OUTDIR}/{sample}/preprocess/tagged_trimmed.bam'
-    output:
-        bam=temp('{OUTDIR}/{sample}/preprocess/tagged_polyA_adapter_trimmed.bam'),
-        summary='{OUTDIR}/{sample}/preprocess/polyATrimmer.summary'
-    params:
-        "MISMATCHES=0 NUM_BASES=6"
-    log:
-        stdout='{OUTDIR}/{sample}/logs/FastqToSam.log'
-    shell:
-        """
-        {repo}/{dropseq}/PolyATrimmer INPUT={input} OUTPUT={output.bam} \
-        {params} OUTPUT_SUMMARY={output.summary} &> {log.stdout}
+        java -jar {repo}/{picard} FastqToSam F1={input.read1} F2={input.read2} O=/dev/stdout {params.Fastq} &>> {log.stdout} |
+        {repo}/{dropseq}/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY={output.summary} {params.tagcb} &>> {log.stdout} |
+        {repo}/{dropseq}/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY={output.summary} {params.tagumi} &>> {log.stdout} |
+        {repo}/{dropseq}/TrimStartingSequence INPUT=/dev/stdin OUTPUT=/dev/stdout OUTPUT_SUMMARY={output.summary} {params.adapter} &>> {log.stdout} |
+        {repo}/{dropseq}/PolyATrimmer INPUT=/dev/stdin OUTPUT={output.processed_bam} OUTPUT_SUMMARY={output.summary} {params.polyA} &>> {log.stdout}
         """
 
 rule Generate_SE_Ubam:
