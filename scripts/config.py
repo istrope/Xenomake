@@ -1,5 +1,6 @@
 import subprocess
 import argparse
+import os
 def get_args(required=True):
     parser=argparse.ArgumentParser(
         allow_abbrev=False,
@@ -95,9 +96,11 @@ def get_args(required=True):
         type=str,
         default='hg38'
     )
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 fn = get_args()
+
+if fn.repository.endswith('/'): #format directory correctly for snakemake scripts
+    fn.repository = fn.repository[:-1]
 
 #Write parser object to config.yaml file to be used in snakemake commands
 import yaml
@@ -105,8 +108,22 @@ file=open('config.yaml','w')
 yaml.dump(fn,file)
 file.close()
 
-
 with open('config.yaml', 'r') as fin:
     data = fin.read().splitlines(True)
 with open('config.yaml', 'w') as fout:
     fout.writelines(data[1:])
+
+#ENSURE THAT TOOLS ARE EXECUTABLE
+if fn.dropseq_tools == 'tools/Drop-seq_tools-2.5.3tools/drop':
+    dropseq_dir = fn.repository + fn.dropseq_tools
+    os.system('chmod +x -R %s' % dropseq_dir)
+
+if fn.picard == 'tools/picard.jar':
+    picard_dir = fn.repository + fn.picard
+    os.system('chmod +x %s' % picard_dir)
+
+print('assembly versions %s' % [fn.human_assembly,fn.mouse_assembly])
+print('downstream processing: %s' % fn.downstream)
+print('ambiguous reads handling: %s' % fn.ambiguous)
+print('cores: %s' % fn.threads)
+print('project "%s" initialized, proceed to snakemake execution' % fn.sample)
