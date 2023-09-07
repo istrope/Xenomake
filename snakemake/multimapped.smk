@@ -110,7 +110,7 @@ rule Filter_MultiMapped_Human:
     output:
         '{OUTDIR}/{sample}/human_final.bam'
     log:
-        '{OUTDIR}/{sample}/log/filter_mm.log'
+        stdout='{OUTDIR}/{sample}/logs/filter_mm.log'
     shell:
         "python {repo}/scripts/filter_mm_reads.py --in-bam {input} --out-bam {output} &>> {log.stdout}"
 
@@ -120,6 +120,6 @@ rule Filter_MultiMapped_Mouse:
     output:
         '{OUTDIR}/{sample}/mouse_final.bam'
     log:
-        '{OUTDIR}/{sample}/log/filter_mm.log'
+        stdout='{OUTDIR}/{sample}/logs/filter_mm.log'
     shell:
         "python {repo}/scripts/filter_mm_reads.py --in-bam {input} --out-bam {output} &>> {log.stdout}"

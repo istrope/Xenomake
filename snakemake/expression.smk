@@ -20,7 +20,7 @@ locus_1 = "LOCUS_FUNCTION_LIST=CODING LOCUS_FUNCTION_LIST=UTR"
 locus_2 = ['INTERGENIC', 'INTRONIC', 'UTR', 'CODING', 'RIBOSOMAL']
 rule DGE_Mouse:
     input:
-        barcodes=config['barcode'],
+        barcodes=config['repository'] +'/' + config['barcode'],
         bam='{OUTDIR}/{sample}/mouse_final.bam'
     output:
         counts='{OUTDIR}/{sample}/final/{sample}_mouse_counts.tsv.gz',
@@ -41,7 +41,7 @@ rule DGE_Mouse:
 rule DGE_Human:
     input:
         bam='{OUTDIR}/{sample}/human_final.bam',
-        barcodes=config['barcode']
+        barcodes=config['repository'] + '/' + config['barcode']
     output:
         counts='{OUTDIR}/{sample}/final/{sample}_human_counts.tsv.gz',
         summary='{OUTDIR}/{sample}/qc/human.dge_summary',
@@ -81,7 +81,7 @@ rule HDF5_Human:
     threads: config['threads']
     shell:
         """
-        cat species/human/annotation.gtf | {repo}/scripts/gtf_parse.sh > species/human/ids.txt
+        cat species/human/annotation.gtf | bash {repo}/scripts/gtf_parse.sh > species/human/ids.txt
         python {repo}/scripts/create_hdf5.py --counts {input.counts} --output {output.hdf5} --species human --assembly hg38
         """
         
@@ -93,7 +93,7 @@ rule HDF5_Mouse:
     threads: config['threads']
     shell:
         """
-        cat species/mouse/annotation.gtf | {repo}/scripts/gtf_parse.sh > species/mouse/ids.txt
+        cat species/mouse/annotation.gtf | bash {repo}/scripts/gtf_parse.sh > species/mouse/ids.txt
         python {repo}/scripts/create_hdf5.py --counts {input.counts} --output {output.hdf5} --species mouse --assembly mm10
         """
 

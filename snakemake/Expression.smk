@@ -88,8 +88,10 @@ rule HDF5_Human:
     output:
         hdf5='{OUTDIR}/{sample}/final/{sample}_human.hdf5'
     threads: config['threads']
+    params:
+        assembly=config['human_version']
     shell:
-        'Rscript scripts/create_hdf5.R --input {input.counts} --out {output.hdf5} --species human --assembly_version hg38'
+        'Rscript scripts/create_hdf5.R --input {input.counts} --out {output.hdf5} --species human --assembly_version {params.assembly}'
         
 rule HDF5_Mouse:
     input:
@@ -97,8 +99,10 @@ rule HDF5_Mouse:
     output:
         hdf5='{OUTDIR}/{sample}/final/{sample}_mouse.hdf5'
     threads: config['threads']
+    params:
+        assembly=config['mouse_version']
     shell:
-        'Rscript scripts/create_hdf5.R --input {input.counts} --out {output.hdf5} --species mouse --assembly_version mm10'
+        'Rscript scripts/create_hdf5.R --input {input.counts} --out {output.hdf5} --species mouse --assembly_version {params.assembly}'
 
 #Create Anndata object for data storage and subsequent processing
 rule H5ad_Human:

@@ -125,21 +125,21 @@ rule Index_Genomes:
         human_ref='species/human/genome.fa',
         human_annotation = 'species/human/annotation.gtf',
     output:
-        human_index=directory('species/human/star_index'),
+        human_index=directory('species/human/star_index/'),
         human_index_file='species/human/star_index/SAindex',
-        mouse_index=directory('species/mouse/star_index'),
+        mouse_index=directory('species/mouse/star_index/'),
         mouse_index_file='species/mouse/star_index/SAindex'
     threads: config['threads']
     shell:
         """
-	    mkdir {output.human_index} &&
+            mkdir {output.human_index} &
 	    STAR --runMode genomeGenerate \
                  --runThreadN {threads} \
                  --genomeDir {output.human_index} \
                  --genomeFastaFiles {input.human_ref} \
                  --sjdbGTFfile {input.human_annotation}
 
-	    mkdir {output.mouse_index} &&
+            mkdir {output.mouse_index} &
 	    STAR --runMode genomeGenerate \
                  --runThreadN {threads} \
                  --genomeDir {output.mouse_index} \
@@ -157,8 +157,6 @@ rule STAR_Human:
         annotation='species/human/annotation.gtf',
         aln=star_mapping_flags,
         tmpdir = '{OUTDIR}/{sample}/mapping/human__STARgenome',
-        star_log = '{OUTDIR}/{sample}/logs',
-        summary = '{OUTDIR}/{sample}/qc',
     log:
         log_progress='{OUTDIR}/{sample}/mapping/human_Log.progress.out',
         params='{OUTDIR}/{sample}/mapping/human_Log.out',
@@ -178,9 +176,6 @@ rule STAR_Human:
             python {repo}/scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | \
             sambamba sort -t {threads} -n /dev/stdin -o /dev/stdout | \
             {repo}/{dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation} &> {log.stdout}
-        rm -r {params.tmpdir}
-        mv {log.params} {log.log_progress} {log.sj} {params.star_log}
-        mv {log.log_final} {params.summary}
         """
 
 rule STAR_Mouse:
@@ -194,8 +189,6 @@ rule STAR_Mouse:
         annotation='species/mouse/annotation.gtf',
         aln=star_mapping_flags,
         tmpdir = '{OUTDIR}/{sample}/mapping/mouse__STARgenome',
-        star_log = '{OUTDIR}/{sample}/logs',
-        summary = '{OUTDIR}/{sample}/qc',
     log:
         log_progress='{OUTDIR}/{sample}/mapping/mouse_Log.progress.out',
         params='{OUTDIR}/{sample}/mapping/mouse_Log.out',
@@ -212,13 +205,9 @@ rule STAR_Mouse:
             --sjdbGTFfile {params.annotation} \
             {params.aln} \
             --runThreadN {threads} | \
-            {repo}/python scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | 
+            python {repo}/scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | 
             sambamba sort -t {threads} -n /dev/stdin -o /dev/stdout | \
             {repo}/{dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation} &> {log.stdout}
-        rm -r {params.tmpdir}
-        mv {log.params} {log.log_progress} {log.sj} {params.star_log}
-        mkdir {params.summary}        
-        mv {log.log_final} {params.summary}
         """
 
 

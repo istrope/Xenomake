@@ -77,52 +77,54 @@ rule Xengsort_Index:
         human='species/human/genome.fa',
         mouse='species/mouse/genome.fa'
     output:
-        directory('species/idx.zarr')
+        expand('species/idx.{extension}',extension=['hash','info']),
     threads: config['threads']
     params:
-        stdout='{OUTDIR}/{sample}/logs/xengsort_index.log'
+        index='species/idx'
     shell:
         """
         xengsort index -H {input.mouse} -G {input.human} \
-        -n 4_500_000_000 -W {threads} --index {output} &> {params.stdout}
+        -n 4_500_000_000 -W {threads} --index {params.index} -k 25
         """
 
-
+rule Make_Fastq:
+    input:
+        bam='{OUTDIR}/{sample}/sorting/mouse_overlapped.bam'
+    output:
+        fq=temp('{OUTDIR}/{sample}/sorting/overlapped.fastq')
+    shell:
+        """
+        java -jar {repo}/{picard} SamToFastq I={input.bam} FASTQ={output.fq}
+        """
 rule Xengsort_Clasify:
     input:
-        bam='{OUTDIR}/{sample}/sorting/mouse_overlapped.bam',
-        index='species/idx.zarr'
+        fq='{OUTDIR}/{sample}/sorting/overlapped.fastq',
+        index_info='species/idx.info',
+        index_hash='species/idx.hash'
     output: #only need to specify one file, if this succeeds then all files generated correctly
-        host='{OUTDIR}/{sample}/xengsort/{sample}-host.fq',
-        graft='{OUTDIR}/{sample}/xengsort/{sample}-graft.fq',
-        ambiguous='{OUTDIR}/{sample}/xengsort/{sample}-ambiguous.fq',
-        neither='{OUTDIR}/{sample}/xengsort/{sample}-neither.fq',
-        both='{OUTDIR}/{sample}/xengsort/{sample}-both.fq'
+        host='{OUTDIR}/{sample}/xengsort/{sample}-host.fq.gz',
+        graft='{OUTDIR}/{sample}/xengsort/{sample}-graft.fq.gz',
+        ambiguous='{OUTDIR}/{sample}/xengsort/{sample}-ambiguous.fq.gz',
+        neither='{OUTDIR}/{sample}/xengsort/{sample}-neither.fq.gz',
+        both='{OUTDIR}/{sample}/xengsort/{sample}-both.fq.gz',
+        unclassified='{OUTDIR}/{sample}/xengsort/{sample}-unclassified.fq.gz'
     threads: config['threads']
     params:
+        index='species/idx',
         stdout="{OUTDIR}/{sample}/logs/xengsort_classify.log",
         outprefix=lambda wc: f"{wc.OUTDIR}/{wc.sample}/xengsort/{wc.sample}",
         debug='-DD',
         prefetch=1
     shell:
         """
-        java -jar {repo}/{picard} SamToFastq I={input.bam} FASTQ=/dev/stdout | \
         xengsort {params.debug} classify \
-        --index {input.index} \
-        --fastq /dev/stdin \
+        --index {params.index} \
+        --fastq {input.fq} \
         --out {params.outprefix} \
         --threads {threads} \
         --chunksize 16.0 \
         --prefetch {params.prefetch} &> {params.stdout}
         """
-
-rule Compress_Xengsort_Fastqs:
-    input:
-        expand('{OUTDIR}/{sample}/xengsort/{sample}-{wildcard}.fq',OUTDIR=config['outdir'],sample=config['sample'],wildcard=xengsort_outs)
-    output:
-        expand('{OUTDIR}/{sample}/xengsort/{sample}-{wildcard}.fq.gz',OUTDIR=config['outdir'],sample=config['sample'],wildcard=xengsort_outs)
-    shell:
-        'gzip {input}'
 
 rule Extract_Xenograft_Readnames:
     input:
