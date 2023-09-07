@@ -81,7 +81,7 @@ rule HDF5_Human:
     threads: config['threads']
     shell:
         """
-        cat species/human/annotation.gtf | {repo}/scripts/gtf_parse.sh > species/human/ids.txt
+        cat species/human/annotation.gtf | bash {repo}/scripts/gtf_parse.sh > species/human/ids.txt
         python {repo}/scripts/create_hdf5.py --counts {input.counts} --output {output.hdf5} --species human --assembly hg38
         """
         
@@ -93,7 +93,7 @@ rule HDF5_Mouse:
     threads: config['threads']
     shell:
         """
-        cat species/mouse/annotation.gtf | {repo}/scripts/gtf_parse.sh > species/mouse/ids.txt
+        cat species/mouse/annotation.gtf | bash {repo}/scripts/gtf_parse.sh > species/mouse/ids.txt
         python {repo}/scripts/create_hdf5.py --counts {input.counts} --output {output.hdf5} --species mouse --assembly mm10
         """
 
