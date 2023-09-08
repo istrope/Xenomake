@@ -29,7 +29,7 @@ rule Preprocess:
         read1=config['r1'],
         read2=config['r2']
     output:
-        processed_bam = '{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam',
+        processed_bam = '{OUTDIR}/{sample}/preprocess/tagged_polyA_adapter_trimmed.bam',
         summary='{OUTDIR}/{sample}/logs/Preprocess.summary'
     params:
         Fastq = "PLATFORM=illumina SORT_ORDER=queryname SAMPLE_NAME={sample}",
