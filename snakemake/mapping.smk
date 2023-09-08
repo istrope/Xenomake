@@ -41,11 +41,11 @@ rule Preprocess:
         stdout='{OUTDIR}/{sample}/logs/Preprocess.log'
     shell:
         """
-        java -jar {repo}/{picard} FastqToSam F1={input.read1} F2={input.read2} O=/dev/stdout {params.Fastq} &>> {log.stdout} |
-        {repo}/{dropseq}/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY={output.summary} {params.tagcb} &>> {log.stdout} |
-        {repo}/{dropseq}/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY={output.summary} {params.tagumi} &>> {log.stdout} |
-        {repo}/{dropseq}/TrimStartingSequence INPUT=/dev/stdin OUTPUT=/dev/stdout OUTPUT_SUMMARY={output.summary} {params.adapter} &>> {log.stdout} |
-        {repo}/{dropseq}/PolyATrimmer INPUT=/dev/stdin OUTPUT={output.processed_bam} OUTPUT_SUMMARY={output.summary} {params.polyA} &>> {log.stdout}
+        java -jar {repo}/{picard} FastqToSam F1={input.read1} F2={input.read2} O=/dev/stdout {params.Fastq} |
+        {repo}/{dropseq}/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY={output.summary} {params.tagcb}|
+        {repo}/{dropseq}/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY={output.summary} {params.tagumi} |
+        {repo}/{dropseq}/TrimStartingSequence INPUT=/dev/stdin OUTPUT=/dev/stdout OUTPUT_SUMMARY={output.summary} {params.adapter} |
+        {repo}/{dropseq}/PolyATrimmer INPUT=/dev/stdin OUTPUT={output.processed_bam} OUTPUT_SUMMARY={output.summary} {params.polyA}
         """
 
 rule Generate_SE_Ubam:
