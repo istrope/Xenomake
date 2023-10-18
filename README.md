@@ -215,7 +215,7 @@ config.py generates a .yaml file that is referenced by snakemake that defines lo
 - **--r2:** second paired end read <br>
 - **--outdir:** name of project directory where output file will be written <br>
 - **--sample:** name of sample to prepend filenames
-- **--xenomake_dir**:path to the xenomake cloned repository on home system
+- **--repository**:path to the xenomake cloned repository on home system
 
 ### Optional Flags:
 - **--threads**: number of cores to use<br>
@@ -254,7 +254,7 @@ project "downsampled" initialized, proceed to snakemake execution
 ```
 
 ### Example Configuration File
-![config.yaml](https://github.com/istrope/Xenomake/blob/main/config.png)
+![config.yaml](https://github.com/istrope/Xenomake/blob/main/figures/config.png)
 <a name="sec3.4"></a>
 ## Step 3: Run Snakemake Pipeline
 <a name="sec3.4.1"></a>
