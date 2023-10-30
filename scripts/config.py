@@ -96,6 +96,12 @@ def get_args(required=True):
         type=str,
         default='hg38'
     )
+    parser.add_argument(
+        '--genic_only',
+        help='use only genic/exonic reads and excluse flags for intergenic,intronic',
+        type=bool,
+        default=True
+    )
     return parser.parse_args()
 fn = get_args()
 
@@ -114,12 +120,12 @@ with open('config.yaml', 'w') as fout:
     fout.writelines(data[1:])
 
 #ENSURE THAT TOOLS ARE EXECUTABLE
-if fn.dropseq_tools == 'tools/Drop-seq_tools-2.5.3tools/drop':
-    dropseq_dir = fn.repository + fn.dropseq_tools
+if fn.dropseq_tools == 'tools/Drop-seq_tools-2.5.3':
+    dropseq_dir = fn.repository +'/' + fn.dropseq_tools
     os.system('chmod +x -R %s' % dropseq_dir)
 
 if fn.picard == 'tools/picard.jar':
-    picard_dir = fn.repository + fn.picard
+    picard_dir = fn.repository + '/' + fn.picard
     os.system('chmod +x %s' % picard_dir)
 
 print('assembly versions %s' % [fn.human_assembly,fn.mouse_assembly])
