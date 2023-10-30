@@ -456,8 +456,8 @@ Paired End Fastq Files Downsamples to 10,000 reads <br>
 Taken from: https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-023-01185-4 <br>
 ### Download Dataset
 ```
-wget https://github.com/istrope/Xenomake/tree/main/test/sub1.fq
-wget https://github.com/istrope/Xenomake/tree/main/test/sub2.fq
+wget https://raw.githubusercontent.com/istrope/Xenomake/main/test/sub1.fq
+wget https://raw.githubusercontent.com/istrope/Xenomake/main/test/sub2.fq
 ```
 ### Download Genomes
 ```
