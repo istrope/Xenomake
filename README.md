@@ -447,7 +447,7 @@ Example of top 4 spots with highest expression
 | AAGAGATGAATCGGTA | 362017          | 57447           | 8723      |
 | CCAAGAAAGTGGGCGA | 367515          | 54742           | 8306      |
 <a name="sec5"></a>
-# Run Test Data
+# Run Xenomake on Medulloblastoma Test Dataset
 Follow Installation Instructions for Xenomake if not done already <br>
 Perform all subsequent steps within Xenomake Directory
 <a name="sec5.1"></a>
