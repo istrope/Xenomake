@@ -380,11 +380,14 @@ Finished job 0.
 │   │   │   ├── unaligned_bc_umi_tagged.bam: Unaligned bam file. Cell-barcode/UMI tagged and Adapter/PolyA trimmed using dropseq workflows <br>
 <a name="sec4"></a>
 # Downstream Cell-Cell Interactions
-## Description
-In Xenomake, we performed some basic analysis on human/mouse unique genes that represent tumor or stroma specific expression in a sample <br>
-
+## Intro
+Using the outputs from Xenomake, we were able to identify group specific expression and differential signalling genes in our model. We provide scripts in the repository `CellInteract` to perform identical analyses that are present in the Xenomake Publication
+## Cell-Cell Signalling
+Cell Signalling molecules such as chemokines/cytokines are simultaneously secreted by both stromal cell types and epithelial tumor cells in the tumor microenvironment. It is often difficult to attribute signalling expression to stromal or tumor cells in standard models. However in PDX models processed with means similar to Xenomake, we are able to study the differential production of cellular signals and identify biomarkers in stromal and epithelial compartments
+## Xenomake Publication Figure (Organism Specific Signalling)
 ![Xenomake Plot](https://github.com/istrope/Xenomake/blob/main/figures/human_mouse_split.jpg)<br>
 ## Repository
+Access further description as well as scripts to perform these downstream analysis:
 `Link to CelllInteract Repository`: https://github.com/bernard2012/CellInteract
 <a name="sec5"></a>
 # QC
