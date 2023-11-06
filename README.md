@@ -27,14 +27,15 @@
 		3.4.3. [Execute Snakemake Workflow](#sec3.4.3)<br>
 		3.4.4. [Snakemake Standard Outs](#sec3.4.4)<br>
 		3.4.5. [Xenomake Output Structure](#sec3.4.4)<br>
-4. [QC](#sec4)</br>
-    4.1. [Scanpy QC Plots](#sec4.1)</br>
-    4.2. [Xengsort Metrics](#sec4.2)</br>
-    4.3. [STAR Metrics](#sec4.3)</br>
-    4.4. [UMI Metrics](#sec4.4)</br>
-5. [Test Dataset](#sec5)</br>
-	5.1. [Download Data](#sec5.1)</br>
-	5.2. [Run Xenomake Pipeline](#sec5.2)</br>
+4. [Downstream Cell-Cell Interactions](#sec4)<br>
+5. [QC](#sec5)</br>
+    5.1. [Scanpy QC Plots](#sec5.1)</br>
+    5.2. [Xengsort Metrics](#sec5.2)</br>
+    5.3. [STAR Metrics](#sec5.3)</br>
+    5.4. [UMI Metrics](#sec5.4)</br>
+6. [Test Dataset](#sec6)</br>
+	6.1. [Download Data](#sec6.1)</br>
+	6.2. [Run Xenomake Pipeline](#sec6.2)</br>
        
 <a name="sec1"></a>
 # About Xenomake
@@ -378,11 +379,19 @@ Finished job 0.
 **│   ├── preprocessing** <br>
 │   │   │   ├── unaligned_bc_umi_tagged.bam: Unaligned bam file. Cell-barcode/UMI tagged and Adapter/PolyA trimmed using dropseq workflows <br>
 <a name="sec4"></a>
+# Downstream Cell-Cell Interactions
+## Description
+In Xenomake, we performed some basic analysis on human/mouse unique genes that represent tumor or stroma specific expression in a sample <br>
+
+![Xenomake Plot](https://github.com/istrope/Xenomake/blob/main/figures/human_mouse_split.jpg)<br>
+## Repository
+`Link to CelllInteract Repository`: https://github.com/bernard2012/CellInteract
+<a name="sec5"></a>
 # QC
-<a name="sec4.1"></a>
+<a name="sec5.1"></a>
 ## Scanpy QC Plots
 ![QC Metrics](https://github.com/istrope/Xenomake/blob/main/figures/scanpy_qc.png) <br>
-<a name="sec4.2"></a>
+<a name="sec5.2"></a>
 ## Xengsort Metrics
 Counts number of reads partitioned to each file
 
@@ -396,7 +405,7 @@ Counts number of reads partitioned to each file
 - Done. [2023-08-17 16:19:49]
 ```
 
-<a name="sec4.3"></a>
+<a name="sec5.3"></a>
 ## STAR Metrics
 ```
                                  Started job on |       Aug 16 18:57:26
@@ -437,7 +446,7 @@ Counts number of reads partitioned to each file
                        Number of chimeric reads |       0
                             % of chimeric reads |       0.00%
 ```
-<a name="sec4.4"></a>
+<a name="sec5.4"></a>
 ## UMI Metrics
 Example of top 4 spots with highest expression
 | CELL_BARCODE     | NUM_GENIC_READS | NUM_TRANSCRIPTS | NUM_GENES |
@@ -446,11 +455,11 @@ Example of top 4 spots with highest expression
 | GAAACTCGTGCGATGC | 398339          | 59154           | 8748      |
 | AAGAGATGAATCGGTA | 362017          | 57447           | 8723      |
 | CCAAGAAAGTGGGCGA | 367515          | 54742           | 8306      |
-<a name="sec5"></a>
+<a name="sec6"></a>
 # Run Xenomake on Medulloblastoma Test Dataset
 Follow Installation Instructions for Xenomake if not done already <br>
 Perform all subsequent steps within Xenomake Directory
-<a name="sec5.1"></a>
+<a name="sec6.1"></a>
 ## Dataset
 Paired End Fastq Files Downsamples to 10,000 reads <br>
 Taken from: https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-023-01185-4 <br>
@@ -466,7 +475,7 @@ unzip hg38_assembly.zip
 wget https://zenodo.org/record/8326731/files/mm10_assembly.zip
 unzip mm10_assembly.zip
 ```
-<a name="sec5.2"></a>
+<a name="sec6.2"></a>
 ## Run Xenomake Pipeline
 ### Activate Xenomake Environment
 ```
