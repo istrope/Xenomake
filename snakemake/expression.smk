@@ -24,7 +24,8 @@ rule DGE_Mouse:
         bam='{OUTDIR}/{sample}/mouse_final.bam'
     output:
         counts='{OUTDIR}/{sample}/final/{sample}_mouse_counts.tsv.gz',
-        summary='{OUTDIR}/{sample}/qc/mouse.dge_summary'
+        summary='{OUTDIR}/{sample}/qc/mouse.dge_summary',
+        long='{OUTDIR}/{sample}/final/{sample}_CellCell_counts.tsv.gz
     threads: config['threads']
     log:
         stdout='{OUTDIR}/{sample}/logs/mouse_dge.log'
@@ -47,6 +48,7 @@ rule DGE_Human:
     output:
         counts='{OUTDIR}/{sample}/final/{sample}_human_counts.tsv.gz',
         summary='{OUTDIR}/{sample}/qc/human.dge_summary',
+        long='{OUTDIR}/{sample}/final/{sample}_CellInteract_counts.tsv.gz
     params:
         default = 'CELL_BARCODE_TAG=CB MOLECULAR_BARCODE_TAG=MI READ_MQ=0 TMP_DIR=/tmp',
         locus = locus_1 if (config['genic_only'] == True) else locus_2
