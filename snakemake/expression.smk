@@ -36,6 +36,8 @@ rule DGE_Mouse:
         {repo}/{dropseq}/DigitalExpression I= {input.bam} O={output.counts} \
         SUMMARY={output.summary} CELL_BC_FILE={input.barcodes} {params.default} \
         {params.locus} &> {log.stdout}
+
+        {repo}/scripts/convert_long.py --counts {output.counts} --output {output.long}
         """
 
 rule DGE_Human:
@@ -55,6 +57,8 @@ rule DGE_Human:
         {repo}/{dropseq}/DigitalExpression I={input.bam} O={output.counts} \
         SUMMARY={output.summary} CELL_BC_FILE={input.barcodes} {params.default} \
         {params.locus} &> {log.stdout}
+
+        {repo}/scripts/convert_long.py --counts {output.counts} --output {output.long}
         """
 
 #Create Visium Tissue Positions File
