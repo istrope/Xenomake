@@ -123,7 +123,7 @@ rule Xengsort_Clasify:
         --out {params.outprefix} \
         --threads {threads} \
         --chunksize 16.0 \
-        --prefetch {params.prefetch} &> {params.stdout}
+        --prefetch 1 &> {params.stdout}
         """
 
 rule Extract_Xenograft_Readnames:
