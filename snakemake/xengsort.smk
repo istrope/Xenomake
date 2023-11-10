@@ -113,8 +113,7 @@ rule Xengsort_Clasify:
         index='species/idx',
         stdout="{OUTDIR}/{sample}/logs/xengsort_classify.log",
         outprefix=lambda wc: f"{wc.OUTDIR}/{wc.sample}/xengsort/{wc.sample}",
-        debug='-DD',
-        prefetch=1
+        debug='-DD'
     shell:
         """
         xengsort {params.debug} classify \
@@ -122,8 +121,7 @@ rule Xengsort_Clasify:
         --fastq {input.fq} \
         --out {params.outprefix} \
         --threads {threads} \
-        --chunksize 16.0 \
-        --prefetch 1 &> {params.stdout}
+        --chunksize 16.0 &> {params.stdout}
         """
 
 rule Extract_Xenograft_Readnames:
