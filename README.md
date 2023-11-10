@@ -65,6 +65,7 @@ bioRxiv 2023.09.04.556109; doi: https://doi.org/10.1101/2023.09.04.556109
 git clone https://github.com/Biivy/Xenomake
 # Move into repository
 cd Xenomake
+chmod -R +x scripts/
 ```
 <a name="sec2.2"></a>
 ### Create conda environment and build dependencies
