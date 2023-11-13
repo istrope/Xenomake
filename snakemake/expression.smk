@@ -2,7 +2,7 @@
 Author: Ivy Strope
 Created: 5/31/23
 Contact: u247529@bcm.edu
-Last Edited: 8/18/23 
+Last Edited: 11/13/23
 '''
 #############################################
 #       SPECIFY WILDCARD VARIABLE
@@ -38,7 +38,7 @@ rule DGE_Mouse:
         SUMMARY={output.summary} CELL_BC_FILE={input.barcodes} {params.default} \
         {params.locus} &> {log.stdout}
 
-        {repo}/scripts/convert_long.py --counts {output.counts} --output {output.long}
+        python {repo}/scripts/convert_long.py --counts {output.counts} --output {output.long}
         """
 
 rule DGE_Human:
@@ -60,7 +60,7 @@ rule DGE_Human:
         SUMMARY={output.summary} CELL_BC_FILE={input.barcodes} {params.default} \
         {params.locus} &> {log.stdout}
 
-        {repo}/scripts/convert_long.py --counts {output.counts} --output {output.long}
+        python {repo}/scripts/convert_long.py --counts {output.counts} --output {output.long}
         """
 
 #Create Visium Tissue Positions File
