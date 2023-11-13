@@ -465,12 +465,12 @@ Follow Installation Instructions for Xenomake if not done already <br>
 Perform all subsequent steps within Xenomake Directory
 <a name="sec6.1"></a>
 ## Dataset
-Paired End Fastq Files Downsamples to 10,000 reads <br>
+Paired End Fastq Files Downsamples to 8.4 million reads <br>
 Taken from: https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-023-01185-4 <br>
 ### Download Dataset
 ```
-wget https://raw.githubusercontent.com/istrope/Xenomake/main/test/sub1.fq
-wget https://raw.githubusercontent.com/istrope/Xenomake/main/test/sub2.fq
+wget https://zenodo.org/records/10120014/files/sub1.fq.gz
+wget https://zenodo.org/records/10120014/files/sub2.fq.gz
 ```
 ### Download Genomes
 ```
@@ -508,3 +508,10 @@ Allow time for Xengsort Indexing and STAR indexing (This is the longest part)
 ```
 snakemake -s snakemake/main.smk --cores 8
 ```
+### Run Times
+|               Process               | Threads |         Time        | RAM Recommended |
+|:-----------------------------------:|:-------:|:-------------------:|:---------------:|
+|            Xengsort Index           |    8    |       211 min       |      25 Gb      |
+|              STAR Index             |    8    | ~120 min per genome |      128 Gb     |
+| Xenomake Pipeline<br>(Test Dataset) |    8    |        37 min       |      35 Gb      |
+| Xenomake Pipeline<br>(Test Dataset) |    4    |        42 min       |      35 Gb      |
