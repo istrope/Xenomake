@@ -509,9 +509,9 @@ Allow time for Xengsort Indexing and STAR indexing (This is the longest part)
 snakemake -s snakemake/main.smk --cores 8
 ```
 ### Run Times
-|               Process               | Threads |         Time        | RAM Recommended |
-|:-----------------------------------:|:-------:|:-------------------:|:---------------:|
-|            Xengsort Index           |    8    |       211 min       |      25 Gb      |
-|              STAR Index             |    8    | ~120 min per genome |      128 Gb     |
-| Xenomake Pipeline<br>(Test Dataset) |    8    |        37 min       |      35 Gb      |
-| Xenomake Pipeline<br>(Test Dataset) |    4    |        42 min       |      35 Gb      |
+|               Process               | Threads |        Time        | RAM Recommended |
+|:-----------------------------------:|:-------:|:------------------:|:---------------:|
+|            Xengsort Index           |    8    |       33 min       |      25 Gb      |
+|              STAR Index             |    8    | ~45 min per genome |      128 Gb     |
+| Xenomake Pipeline<br>(Test Dataset) |    8    |       37 min       |      35 Gb      |
+| Xenomake Pipeline<br>(Test Dataset) |    4    |       42 min       |      35 Gb      |
