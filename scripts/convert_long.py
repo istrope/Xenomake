@@ -1,3 +1,7 @@
+"""
+This script is intended to be used with Cell Cell Interactions Downstream of analysis as described on the Github README.md
+Conver_long.py takes a UMI count matrix and outputs a new matrix with three columns (Gene Name, Cell Barcode, UMI Count). It also removes all zero counts from the file
+"""
 import pandas as pd
 import argparse
 
@@ -5,6 +9,7 @@ def arguments():
     parser=argparse.ArgumentParser(allow_abbrev=False,add_help=False)
     parser.add_argument('--counts',help='digital gene expression output file',type=str,required=True)
     parser.add_argument('--output',help='output file path',type=str,required=True)
+    return parser.parse_args()
 
 args = arguments()
 
