@@ -36,6 +36,7 @@
 6. [Test Dataset](#sec6)</br>
 	6.1. [Download Data](#sec6.1)</br>
 	6.2. [Run Xenomake Pipeline](#sec6.2)</br>
+ 	6.3 [Run Times/RAM Requirements](#sec6.3)
        
 <a name="sec1"></a>
 # About Xenomake
@@ -508,6 +509,7 @@ Allow time for Xengsort Indexing and STAR indexing (This is the longest part)
 ```
 snakemake -s snakemake/main.smk --cores 8
 ```
+<a name="sec6.3"></a>
 ### Run Times
 |               Process               | Threads |        Time        | RAM Recommended |
 |:-----------------------------------:|:-------:|:------------------:|:---------------:|
