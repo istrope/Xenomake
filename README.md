@@ -11,6 +11,7 @@
     2.5. [Download optional tools](#sec2.4)</br>
 3. [Running Xenomake](#sec3)</br>
 	3.1. [QuickStart](#sec3.1)<br>
+ 	3.1.2 [Memory Requirements and Runtimes](#sec3.1.2)
     3.2. [Step1: Add Species Information](#sec3.2)</br>
     3.2.1. [Description](#sec3.2.1)<br>
 		3.2.2. [Flags](#sec3.2.2)<br>
@@ -36,7 +37,6 @@
 6. [Test Dataset](#sec6)</br>
 	6.1. [Download Data](#sec6.1)</br>
 	6.2. [Run Xenomake Pipeline](#sec6.2)</br>
- 	6.3 [Run Times/RAM Requirements](#sec6.3)
        
 <a name="sec1"></a>
 # About Xenomake
@@ -155,6 +155,14 @@ snakemake -s <repo_dir>/snakemake/main.smk -n --cores 8
 # Initialize Xenomake Pipeline (species dir and config.yaml need to be created)
 snakemake -s <repo_dir>/snakemake/main.smk --cores <n_threads> --keep-going
 ```
+<a name="sec3.1.2"></a>
+### Memory Requirements and Runtimes
+|               Process               | Threads |        Time        | RAM Recommended |
+|:-----------------------------------:|:-------:|:------------------:|:---------------:|
+|            Xengsort Index           |    8    |       33 min       |      25 Gb      |
+|              STAR Index             |    8    | ~90 min per genome |      128 Gb     |
+| Xenomake Pipeline<br>(Test Dataset) |    8    |       37 min       |      35 Gb      |
+| Xenomake Pipeline<br>(Test Dataset) |    4    |       42 min       |      35 Gb      |
 
 <a name="sec3.2"></a>
 ## Step 1: Add Species Information:
@@ -501,19 +509,10 @@ python scripts/config.py \
 --r1 test/sub1.fq \
 --r2 test/sub2.fq \
 --outdir out \
---sample test \
---downstream False
+--sample test
 ```
 ### Run Pipeline
 Allow time for Xengsort Indexing and STAR indexing (This is the longest part)
 ```
 snakemake -s snakemake/main.smk --cores 8
 ```
-<a name="sec6.3"></a>
-### Run Times
-|               Process               | Threads |        Time        | RAM Recommended |
-|:-----------------------------------:|:-------:|:------------------:|:---------------:|
-|            Xengsort Index           |    8    |       33 min       |      25 Gb      |
-|              STAR Index             |    8    | ~90 min per genome |      128 Gb     |
-| Xenomake Pipeline<br>(Test Dataset) |    8    |       37 min       |      35 Gb      |
-| Xenomake Pipeline<br>(Test Dataset) |    4    |       42 min       |      35 Gb      |
