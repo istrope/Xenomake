@@ -11,7 +11,7 @@
     2.5. [Download optional tools](#sec2.4)</br>
 3. [Running Xenomake](#sec3)</br>
 	3.1. [QuickStart](#sec3.1)<br>
- 	3.1.2 [Memory Requirements and Runtimes](#sec3.1.2)
+ 	3.1.2 [Memory Requirements and Runtimes](#sec3.1.2)<br>
     3.2. [Step1: Add Species Information](#sec3.2)</br>
     3.2.1. [Description](#sec3.2.1)<br>
 		3.2.2. [Flags](#sec3.2.2)<br>
