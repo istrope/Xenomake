@@ -514,6 +514,6 @@ snakemake -s snakemake/main.smk --cores 8
 |               Process               | Threads |        Time        | RAM Recommended |
 |:-----------------------------------:|:-------:|:------------------:|:---------------:|
 |            Xengsort Index           |    8    |       33 min       |      25 Gb      |
-|              STAR Index             |    8    | ~45 min per genome |      128 Gb     |
+|              STAR Index             |    8    | ~90 min per genome |      128 Gb     |
 | Xenomake Pipeline<br>(Test Dataset) |    8    |       37 min       |      35 Gb      |
 | Xenomake Pipeline<br>(Test Dataset) |    4    |       42 min       |      35 Gb      |
