@@ -163,7 +163,7 @@ snakemake -s <repo_dir>/snakemake/main.smk --cores <n_threads> --keep-going
 |              STAR Index             |    8    | ~90 min per genome |      128 Gb     |
 | Xenomake Pipeline<br>(Test Dataset: 8.4m reads) |    8    |       37 min       |      35 Gb      |
 | Xenomake Pipeline<br>(Test Dataset: 8.4m reads) |    4    |       42 min       |      35 Gb      |
-
+| Xenomake Pipeline<br>(Medulloblastoma: 88m reads) |    8    |       300 min       |      35 Gb      |
 <a name="sec3.2"></a>
 ## Step 1: Add Species Information:
 This is a **REQUIRED** step to initialize your implementation of the xenomake pipeline
