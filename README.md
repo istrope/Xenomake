@@ -4,11 +4,8 @@
     1.3. [Pipeline Overview](#sec1.3)</br>
     1.4. [Publication](#sec1.4)</br>
 2. [Installation](#sec2)</br>
-    2.1. [Download Xenomake Scripts](#sec2.1)</br>
-    2.2. [Create conda environment and build dependencies](#sec2.2)</br>
-    2.3. [Install Xengsort for xenograft read sorting](#sec2.3)</br>
-    2.4. [Install genomes and indices](#sec2.4)</br>
-    2.5. [Download optional tools](#sec2.4)</br>
+    2.2. [Create conda environment and build dependencies](#sec2.1)</br>
+    2.5. [Download optional tools](#sec2.2)</br>
 3. [Running Xenomake](#sec3)</br>
 	3.1. [QuickStart](#sec3.1)<br>
  	3.1.2 [Memory Requirements and Runtimes](#sec3.1.2)<br>
@@ -61,45 +58,16 @@ bioRxiv 2023.09.04.556109; doi: https://doi.org/10.1101/2023.09.04.556109
 <a name="sec2"></a>
 # Installation
 <a name="sec2.1"></a>
-## Download Scripts
-```
-git clone https://github.com/Biivy/Xenomake
-# Move into repository
-cd Xenomake
-chmod -R +x scripts/
-```
-<a name="sec2.2"></a>
 ### Create conda environment and build dependencies
 ```
 # Create conda environment with specified requirements
 conda env create -n xenomake -f environment.yaml
 # Activate conda environment
 conda activate xenomake
+#Install Xenomake
+pip install xenomake
 ```
-<a name="sec2.3"></a>
-### Install Xengsort for Xenograft Read Sorting
-see https://gitlab.com/genomeinformatics/xengsort for more information
-Dependencies for xengsort are included within the environment.yaml file
-```
-git clone https://gitlab.com/genomeinformatics/xengsort.git
-cd xengsort  # the directory of the cloned repository
-conda activate xenomake   # activate conda environment if not done already
-pip install -e .
-```
-<a name="sec2.4"></a>
-## Install Genomes and Indices
-
-### Zenodo Repository
-Contains Genome Files, Annotation Files, and Xengsort Index Files <br>
-Mouse Version: mm10 <br>
-Human Version: hg38 <br>
-Zenodo Repository: https://zenodo.org/record/8250705
-
-### NCBI Genomes 
-Optional in case users want to use a different assembly version <br>
-Webpage: https://www.ncbi.nlm.nih.gov/datasets/genome/ 
-
-<a name="sec2.5"></a>
+<a name="sec2.2"></a>
 ## Download Dropseq (optional)
 Current version of Dropseq-tools is 2.5.3 and is present at <repo_dir>/tools/Dropseq-2.5.3/ <br>
 For updated versions check:
@@ -118,31 +86,36 @@ https://broadinstitute.github.io/picard/
 
 <a name="sec3.1"></a>
 ## Quickstart
+
+### Quickstart: Initialize Xenomake:
+```
+#Initialize Xenomake
+xenomake init
+```
+
 ### Quickstart: Add Species Information:
 ```
 # Print Help Function Call
-python <repo_dir>/scripts/species_parser.py --help
+xenomake species --help
 
 # Create species folder 
-python <reop_dir>/scripts/species_parser.py \
+xenomake species \
 --mouse_ref <mouse_reference_assembly.fa> \
 --human_ref <human_reference_assemble.fa> \
 --mouse_annotation <mouse_annotation.gtf> \
 --human_annotaion <human_annotation.gtf> \
 ```
 
-
 ### Quickstart: Create Configuration File:
 ```
 # Print Help Function Call
-python <repo_dir>/scripts/config.py --help
+xenomake config --help
 
-# Create config.yaml 
-python <reop_dir>/scripts/config.py \
---repository <path_to_Xenomake_dir>
+# Create configuration file
+xenoamke config \
 --r1 <sample_R1.fastq.gz> \
 --r2 <sample_R2.fastq.gz> \
---outdir <dir_name> \
+--project <dir_name> \
 --sample <sample_name> \
 --threads <n_threads>
 ```
@@ -151,9 +124,9 @@ python <reop_dir>/scripts/config.py \
 ### Quickstart: Run Snakemake Pipeline
 ```
 # Dry Run
-snakemake -s <repo_dir>/snakemake/main.smk -n --cores 8
+xenomake run -n 
 # Initialize Xenomake Pipeline (species dir and config.yaml need to be created)
-snakemake -s <repo_dir>/snakemake/main.smk --cores <n_threads> --keep-going
+xenoamke run --cores <n_threads> --keep_going
 ```
 <a name="sec3.1.2"></a>
 ### Memory Requirements and Runtimes
