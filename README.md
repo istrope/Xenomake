@@ -4,8 +4,8 @@
     1.3. [Pipeline Overview](#sec1.3)</br>
     1.4. [Publication](#sec1.4)</br>
 2. [Installation](#sec2)</br>
-    2.2. [Create conda environment and build dependencies](#sec2.1)</br>
-    2.5. [Download optional tools](#sec2.2)</br>
+    2.1. [Create conda environment and build dependencies](#sec2.1)</br>
+    2.2. [Download optional tools](#sec2.2)</br>
 3. [Running Xenomake](#sec3)</br>
 	3.1. [QuickStart](#sec3.1)<br>
  	3.1.2 [Memory Requirements and Runtimes](#sec3.1.2)<br>
