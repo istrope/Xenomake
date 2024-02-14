@@ -157,19 +157,23 @@ This is a **REQUIRED** step to initialize your implementation of the xenomake pi
 <a name="sec3.2.1"></a>
 ### Description
 *xenomake init* takes information about your reads, run modes, spatial chemistry, and sample/project names to create a configuration file for your project <br><br>
+
 ***Run Modes*** <br> 
 =========== <br>
 <p>
-	Run modes refer to how reads are handled during mapping and xenograft sorting portions of the pipeline. Options are the following: <br> <br>
-	1. *lenient*: xenograft ambiguous re-mapped (True), multi-mapped re-aligned (True), only genic reads (True) <br>
+	Run modes refer to how reads are handled during mapping and xenograft sorting portions of the pipeline. Options are the following: <br><br>
+	
+	1. lenient: xenograft ambiguous re-mapped (True), multi-mapped re-aligned (True), only genic reads (True) <br>
 	2. *prude*: xenograft ambiguous re-mapped (False), multi-mapped re-aligned (False), only genic reads (True) <br>
 	3. *custom*: User Defined 
+ 
 </p><br> <br>
 
 ***Spatial Modes*** <br>
 =============== <br>
 <p>
 	Spatial modes refer to the spatial technology used to generate reads <br> <br>
+	
 		1. visium <br>
 		2. slide-seq <br>
 		3. hdst-seq <br>
