@@ -1,175 +1,72 @@
 import argparse
 import os
 import yaml
-from xenomake.utils import assert_file, check_index, str2bool
+from xenomake.utils import str2bool
 from xenomake.errors import *
-def get_species_parser(required=True):
-    parser=argparse.ArgumentParser(
-        allow_abbrev=False,
-        add_help=False
-    )
-    parser.add_argument(
-        '--mouse_ref',
-        help='Path to the .fa file for mouse reference to be used in alignment and organism assignment',
-        type=str,
-        required=required
-    )
-    parser.add_argument(
-        '--human_ref',
-        help='Path to the .fa file for human reference to be used in alignment and organism assignment',
-        type=str,
-        required=True
-    )
-    parser.add_argument(
-        '--human_annotation',
-        help='Path to the .gtf file matching the human reference build',
-        type=str,
-        required=True
-    )
-    parser.add_argument(
-        '--mouse_annotation',
-        help='Path to the .gtf file matching the mouse reference build',
-        required=True,
-        type=str
-    )
-    parser.add_argument(
-        '--xengsort_hash',
-        help='path to xengsort hash table file required for classification',
-        required=False,
-        default=None
-    )
-    parser.add_argument(
-        '--xengsort_info',
-        help='path to xengsort info file requred for classification'
-    )
-    parser.add_argument(
-        '--human_index',
-        help='path to star index under human  genome build',
-        required=False,
-        default=None
-    )
-    parser.add_argument(
-        '--mouse_index',
-        help='path to star index under mouse genome build',
-        required=False,
-        default=None
-    )
-    return parser
 
-def get_run_parser(required=True):
-    parser=argparse.ArgumentParser(
-        allow_abbrev=False,
-        add_help=False
+def setup_spatial_parser(parent_parser):
+    parser_spatial = parent_parser.add_parser(
+        'spatial',
+        help = 'create custom method for spatial technology'
     )
-    parser.add_argument(
-        '--project',
-        help='project directory',
-        required=True,
-        type=str
-    )
-    parser.add_argument(
-        '--sample',
-        help='sample name used to prepend filenames and directories',
-        required=True,
-        type=str
-    )
-    parser.add_argument(
+    parser_spatial.add_argument(
         '--ambiguous',
         help = 'handle multimap from "both" and "ambiguous" output reads (Must be boolean True/False)',
         required=False,
         default=True,
         type=bool
     )
-    parser.add_argument(
+    parser_spatial.add_argument(
         '--mm_reads',
         help='assign multimapped reads to highest confidence position',
         required=False,
         default=True,
         type=bool
     )
-    parser.add_argument(
+    parser_spatial.add_argument(
         '--downstream',
         help = 'Performs Scanpy Processing of Data (Must be boolean True/False)',
         required = False,
         default = True,
         type = bool
     )
-    parser.add_argument(
+    parser_spatial.add_argument(
         '--genic_only',
         help='use only genic/exonic reads and excluse flags for intergenic,intronic',
         type=bool,
-        default=True
+        default=True,
+        required = False
     )
-    parser.add_argument(
-        '--download_species',
-        help='download hg38 and mm10 genomes, annotations, STAR indices, and xengsort index',
-        required=False,
-        default=False,
-        type=bool
-    )
-    parser.add_argument(
+    parser_spatial.add_argument(
         '--barcode',type=str,help='barcode file used to demultiplex samples in digitial gene expression. default is visium',
         default='barcodes/visium-v2.txt',
         required=False
     )
-    return parser
-def get_spatial_parser(requred=True):
-    parser = argparse.ArgumentParser(
-        allow_abbrev=False,
-        description='spatial chemistry parser',
-        add_help=False
-    )
-    parser.add_argument(
-        '--name',type=str,help='name of run mode used option',required=True
-    )
-    parser.add_argument(
-        '--umi',type = str,help='umi structure using python list syntax'
-        + "13-20 NT of Read1, use --umi r1[12:20]. It is also possible to use the first 8nt of "
-        + "Read2 as UMI: --umi r2[0:8]",
-        required = True)
-    parser.add_argument(
+    parser_spatial.add_argument(
+        '--umi',
+        type = str,
+        help='umi structure defining the positions of umi in units of bases'
+        +'Example: Visium Cell Barcode is contained in bases 17-28 and umi flag would be'
+        + '--umi 17-28',
+        required = True
+        )
+    parser_spatial.add_argument(
         '--beads',type=int,help='expeted number of spots/beads for run'
     )
-    parser.add_argument(
+    parser_spatial.add_argument(
         '--spot_diameter_um',type =float,required=False,help='diameter of spot in spatial array: visium = 55um'
     )
-    parser.add_argument(
+    parser_spatial.add_argument(
         '--spot_diameter_um',type=float,required=False,help='distance between spots in um, visium = 100um'
     )
-    parser.add_argument(
+    parser_spatial.add_argument(
         '--cell_barcode',
-        help = 'structure of CELL BARCODE, '
-    )
-    return parser
-def get_file_parser(required=True):
-    parser=argparse.ArgumentParser(
-        allow_abbrev=False,
-        add_help=False
-    )
-    parser.add_argument(
-        '--r1',
-        help='Path to the paired end r1 file generated from bcl2fastq',
-        type=str,
         required=True,
-        default=None
+        help = 'cell barcode structure defining the positions of umi in units of bases'
+        +'Example: Visium Cell Barcode is contained in bases 1-16 and umi flag would be'
+        + '--cell_barcode 1-16'
     )
-    parser.add_argument(
-        '--r2',
-        help='Path to the paired end r2 file genereated from bcl2fastq',
-        type=str,
-        required=True,
-        default=None
-    )
-    return parser
-
-def setup_config_parser(config,parent_parser):
-    parser_config = parent_parser.add_parser(
-        'config',help='configure xenomake run'
-    )
-    parser_config_subparsers = parser_config.add_subparsers(
-        help = 'config sub-command help'
-    )
-    return parser_config
+    return parser_spatial
 
 class ConfigMainVariable:
     def __init__(self,name,**kwargs):
@@ -203,6 +100,7 @@ class RunMode(ConfigMainVariable):
 
 class Spatial_Setup(ConfigMainVariable):
     variable_types = {'barcodes':str,'spot_diameter_um':float,'width_um': int}
+    mapping_types = {'cell_barcode':str,'umi':str}
 
     @property
     def has_barcodes(self):
@@ -237,8 +135,8 @@ class ConfigFile:
             'dropseq_tools': 'tools/Drop-seq_tools-2.5.3',
             'picard': 'tools/picard.jar',
             'species': {},
-            'run_modes': {},
-            'spatial_setups': {},
+            'run_mode': {},
+            'spatial_setup': {},
         }
         self.file_path = 'config.yaml'
 
@@ -286,14 +184,7 @@ class ConfigFile:
             raise UnrecognizedConfigVariable(
                 variable,list(self.main_variables_pl2sg.keys())
             )
-        
-    def spaital_data(self):
-        return self.variables['spatial_data']
     
-    def check_spatial_data(self,cell_barcode = None,umi=None,name=None):
-        if umi is not None:
-
-        
     def get_variable(self,variable,name):
         if not self.variable_exists(variable,name):
             raise ConfigVariableNotFoundError(variable,name)
@@ -326,32 +217,20 @@ class ConfigFile:
             if isinstance(value,bool) and key in kwargs.keys():
                 kwargs[key] = str2bool(kwargs[key])
 
-    def process_spatial_args(self,**kwargs):
-        
-    def process_species_args(self,
-                         mouse_ref=None,
-                         human_ref=None,
-                         mouse_annotation=None,
-                         human_annotation=None,
-                         human_index=None,
-                         mouse_index=None,
-                         xengsort_hash=None,
-                         xengsort_info=None):
-        assert_file(mouse_ref,default_value=None,extension=[".fa",".fna",".fa.gz",".fna.gz"])
-        assert_file(human_ref,default_value=None,extension=[".fa",".fna",".fa.gz",".fna.gz"])
+        return kwargs
+    
 
-        assert_file(mouse_annotation,default_value=None,extension=[".gtf",".gtf.gz"])
-        assert_file(human_annotation,default_value=None,extension=[".gtf",".gtf.gz"])
+    def process_spatial_data(self,cell_barcode = None,umi=None,name=None):
+        bam_tags = "CR:{cell},CB:{cell},MI:{UMI},RG:{assigned}"
+        if umi is not None:
+            self.variables['umi'] = umi
+        if cell_barcode is not None:
+            self.variables['cell'] = cell_barcode
+        if name is not None:
+            self.variables[name] = name
 
-        if human_index:
-            check_index(human_index)
-        if mouse_index:
-            check_index(mouse_index)
-        if xengsort_hash:
-            assert_file(xengsort_hash,default_value=None,extension=['.hash'])
-        if xengsort_info:
-            assert_file(xengsort_info,default_value=None,extension=['.info'])
+        barcodes = {'bam_tags': bam_tags}
 
-        d = dict()
-        return(d)
-
+        self.variables['alignment_tags'] = bam_tags
+        return barcodes
+    

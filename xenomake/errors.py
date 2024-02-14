@@ -6,7 +6,7 @@ class XenomakeError(Exception):
         self.msg = msg
 
     def __str__(self):
-        msg = 'ERROR: ' + str(self.__clas__.__name__) + '\n'
+        msg = 'ERROR: ' + str(self.__class__.__name__) + '\n'
 
         if hasattr(self,'msg') and self.msg is not None:
             msg += self.msg
@@ -23,6 +23,13 @@ class FileWrongExtensionError(XenomakeError):
         msg += f'The extension should be {self.expected_extension}.\n'
         return msg
 
+class FileNotFoundError(XenomakeError):
+    def __init__(self,path):
+        self.file_path = path
+    
+    def __str__(self):
+        msg = super().__str__()
+        msg += f'File {self.file_path} not found in system'
 
 class ConfigVariableError(XenomakeError):
     def __init__(self,variable_name,variable_value):
@@ -36,12 +43,6 @@ class EmptyConfigVariableError(XenomakeError):
     def __str__(self):
         msg = super().__str__()
         msg += f'cannot remove, or set {self.variable_name} to emtpy list, or None\n'
-        msg += 'this ERROR could happen in two cases: \n'
-        msg += f'1) you tried to remove a {self.variable_name}, '
-        msg += f'and as a result the sample would not have'
-        msg += f' any {self.variable_name} available.\n'
-        msg += f'2) you tried to remove the `default` value of'
-        msg += f' {self.variable_name} from the configuration.\n'
         return msg
     
 class NoConfigError(XenomakeError):
