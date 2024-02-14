@@ -20,7 +20,7 @@
 		3.3.3. [Command Line Implementation](#sec3.3.3)<br>
 		3.3.4. [Output](#sec3.3.4)<br>
     3.4 [Step3: Xenomake Config](#sec3.4)<br>
-   		3.4.1 [Decsripcion](#sec3.4.1)<br>
+   		3.4.1 [Decsription](#sec3.4.1)<br>
      		3.4.2 [Flags](#sec3.4.2)<br>
        		3.4.3 [Command Line Implementation](#sec3.4.3)<br>
     3.5. [Step3: Run Snakemake Pipeline](#sec3.4)</br>
@@ -161,26 +161,26 @@ This is a **REQUIRED** step to initialize your implementation of the xenomake pi
 ***Run Modes*** <br> 
 =========== <br>
 <p>
-	Run modes refer to how reads are handled during mapping and xenograft sorting portions of the pipeline. Options are the following: <br><br>
+	Run modes refer to how reads are handled during mapping and xenograft sorting portions of the pipeline. Options are the following: <br>
 	
 	1. lenient: xenograft ambiguous re-mapped (True), multi-mapped re-aligned (True), only genic reads (True) <br>
-	2. *prude*: xenograft ambiguous re-mapped (False), multi-mapped re-aligned (False), only genic reads (True) <br>
-	3. *custom*: User Defined 
+	2. prude: xenograft ambiguous re-mapped (False), multi-mapped re-aligned (False), only genic reads (True) <br>
+	3. custom: User Defined 
  
 </p><br> <br>
 
 ***Spatial Modes*** <br>
 =============== <br>
 <p>
-	Spatial modes refer to the spatial technology used to generate reads <br> <br>
+	Spatial modes refer to the spatial technology used to generate reads <br>
 	
-		1. visium <br>
-		2. slide-seq <br>
-		3. hdst-seq <br>
-		4. stereo-seq <br>
-		5. pixel-seq <br>
-		6. dbit-seq <br>
-		7. custom: User Defined barcode structure, umi structure, spot size, slide size, barcode file, number of beads/spots
+	1. visium <br>
+	2. slide-seq <br>
+	3. hdst-seq <br>
+	4. stereo-seq <br>
+	5. pixel-seq <br>
+	6. dbit-seq <br>
+	7. custom: User Defined barcode structure, umi structure, spot size, slide size, barcode file, number of beads/spots
 </p>
 
 <a name="sec3.2.2"></a>
