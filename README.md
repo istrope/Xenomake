@@ -9,22 +9,26 @@
 3. [Running Xenomake](#sec3)</br>
 	3.1. [QuickStart](#sec3.1)<br>
  	3.1.2 [Memory Requirements and Runtimes](#sec3.1.2)<br>
-    3.2. [Step1: Add Species Information](#sec3.2)</br>
-    3.2.1. [Description](#sec3.2.1)<br>
+    3.2. [Step1: Xenomake Init](#sec3.2)</br>
+    		3.2.1. [Description](#sec3.2.1)<br>
 		3.2.2. [Flags](#sec3.2.2)<br>
 		3.2.3. [Command Line Implementation](#sec3.2.3)<br>
 		3.2.4. [Output](#sec3.2.4)<br>
-    3.3. [Step2: Project Configuration](#sec3.3)</br>
-    	3.3.1 [Description](#sec3.3.1)<br>
+    3.3. [Step2: Xenomake Species](#sec3.3)<br>
+    		3.3.1 [Description](#sec3.3.1)<br>
 		3.3.2 [Flags](#sec3.3.2)<br>
 		3.3.3. [Command Line Implementation](#sec3.3.3)<br>
 		3.3.4. [Output](#sec3.3.4)<br>
-    3.4. [Step3: Run Snakemake Pipeline](#sec3.4)</br>
-		3.4.1. [Snakemake Description](#sec3.4.1)<br>
-		3.4.2. [Dry Run](#sec3.4.2)<br>
-		3.4.3. [Execute Snakemake Workflow](#sec3.4.3)<br>
-		3.4.4. [Snakemake Standard Outs](#sec3.4.4)<br>
-		3.4.5. [Xenomake Output Structure](#sec3.4.4)<br>
+    3.4 [Step3: Xenomake Config](#sec3.4)<br>
+   		3.4.1 [Decsripcion](#sec3.4.1)<br>
+     		3.4.2 [Flags](#sec3.4.2)<br>
+       		3.4.3 [Command Line Implementation](#sec3.4.3)<br>
+    3.5. [Step3: Run Snakemake Pipeline](#sec3.4)</br>
+		3.5.1. [Snakemake Description](#sec3.4.1)<br>
+		3.5.2. [Dry Run](#sec3.4.2)<br>
+		3.5.3. [Execute Snakemake Workflow](#sec3.4.3)<br>
+		3.5.4. [Snakemake Standard Outs](#sec3.4.4)<br>
+		3.5.5. [Xenomake Output Structure](#sec3.4.4)<br>
 4. [Downstream Cell-Cell Interactions](#sec4)<br>
 5. [QC](#sec5)</br>
     5.1. [Scanpy QC Plots](#sec5.1)</br>
@@ -109,18 +113,25 @@ xenomake species \
 --human_annotaion <human_annotation.gtf> \
 ```
 
-### Quickstart: Create Configuration File:
+### Quickstart: Spatial Configuration:
+If default run mode and spatial mode, this step can be skipped <br>
+If 'custom' run mode or spatial mode, you must input the following parameters
 ```
 # Print Help Function Call
-xenomake config --help
+xenomake spatial --help
 
 # Create configuration file
-xenomake config \
---r1 <sample_R1.fastq.gz> \
---r2 <sample_R2.fastq.gz> \
---project <dir_name> \
---sample <sample_name> \
---threads <n_threads>
+xenomake spatial \
+--barcode_file <sample_R1.fastq.gz> \
+--umi <sample_R2.fastq.gz> \
+--cell_barcode <dir_name> \
+--beads <sample_name> \
+--spot_diameter_um <n_threads> \
+--slide_size_um \
+--ambiguous \
+--downstream \
+--genic_only \
+--mm_reads
 ```
 
 
@@ -141,12 +152,79 @@ xenomake run --cores <n_threads> --keep_going
 | Xenomake Pipeline<br>(Test Dataset: 8.4m reads) |    4    |       42 min       |      35 Gb      |
 | Xenomake Pipeline<br>(Medulloblastoma: 88m reads) |    8    |       300 min       |      35 Gb      |
 <a name="sec3.2"></a>
-## Step 1: Add Species Information:
+## Step 1: Project Initialization:
 This is a **REQUIRED** step to initialize your implementation of the xenomake pipeline
 <a name="sec3.2.1"></a>
 ### Description
-species_parser.py links all inputs in a new directory structure that is then easily referenced by snakemake
+*xenomake init* takes information about your reads, run modes, spatial chemistry, and sample/project names to create a configuration file for your project <br>
+*Run Modes* <br> 
+<p>
+	Run modes refer to how reads are handled during mapping and xenograft sorting portions of the pipeline. There are three different options for handling these parameters (custom, prude, lenient)<br>
+	1. lenient: xenograft ambiguous re-mapped (True), multi-mapped re-aligned (True), only genic reads (True) <br>
+	2. prude: xenograft ambiguous re-mapped (False), multi-mapped re-aligned (False), only genic reads (True) <br>
+	3. custom: User Defined
+</p>
+*Spatial Modes* <br>
+<p>
+	Spatial modes refer to the spatial technology used to generate reads
+	1. visium
+	2. slide-seq
+	3. hdst-seq
+	4. stereo-seq
+	5. pixel-seq
+	6. dbit-seq
+	7. custom: User Defined barcode structure, umi structure, spot size, slide size, barcode file, number of beads/spots
+</p>
+
 <a name="sec3.2.2"></a>
+- **--r1:** paired-end read in fastq format <br>
+- **--r2:** second paired-end read <br>
+- **--project:** name of project directory where the output file will be written <br>
+- **--sample:** name of sample to prepend filenames and create sample directory within the project directory
+- **--spatial_mode:** preset run modes based upon spatial method used [custom,visium,slide_seq,hdst_seq,stereo_seq,pixel_seq,dbit_seq]
+- **--run_mode:** preset run modes based upon read processing. This controls multi-mapped, ambiguous, and non-genic read handling [custom, prude, lenient]
+
+### Optional Flags:
+- **--root_dir**: directory of project execution (default: ./) <br>
+- **--temp_dir**: temporary directory (default: /tmp)
+- **--picard**: path to user preferred picard.jar tool (default: tools/picard.jar) <br>
+- **--dropseq_tools**: path to user preferred download of dropseq tools directory (default: tools/Dropseq_2.5.1)<br>
+- **--download_species**: download mm10 and hg38 genomes and annotations to the current directory (default: False) <be>
+- **--download_index**: download star indices and xengosort index to the current directory (default: False)
+<a name="sec3.2.3"></a>
+### Command Line Implementation:
+```
+# Print Help Function Call
+xenomake init --help
+
+#Initialize Project
+xenomake init
+--r1 <sample_R1.fastq.gz> \
+--r2 <sample_R2.fastq.gz> \
+--project <project_name> \
+--sample <sample_name> \
+--spatial_mode <spatial_name> \
+--run_mode <custom, lenient, spatial>
+```
+<a name="sec3.2.4"></a>
+### Output Message
+```
+sample name: A1
+spatial chemistry: visium
+run mode: lenient
+project "downsampled" initialized, proceed to snakemake execution
+```
+
+### Example Configuration File
+![config.yaml](https://github.com/istrope/Xenomake/blob/main/figures/config.png)
+
+<a name="sec3.3"></a>
+## Step 2: Xenomake Species 
+This is a **REQUIRED** step to initialize your implementation of the xenomake pipeline
+<a name="sec3.3.1"></a>
+### Description
+*xenomake species* links all inputs in a new directory structure that is then easily referenced in project run
+<a name="sec3.3.2"></a>
 ### Required Flags: 
 - **--mouse_ref:** Mouse Reference Assembly in fasta format<br>
 - **--human_ref:** Human Reference Assembly in fasta format<br>
@@ -157,26 +235,27 @@ Including optional flags for indices will skip parts in the pipeline such as *ST
 These two rules can be time-consuming and if these files are already generated, it doesn't need to be done again. <br> <br>
 - **--human_index:** STAR index directory for human genome reference<br>
 - **--mouse_index:** STAR index directory for mouse genome reference<br>
-- **--xengsort_index:** Xengsort Index output to be used in xengsort classify step
-<a name="sec3.2.3"></a>
+- **--xengsort_hash:** Xengsort hash table filepath to be used in xengsort classify step
+- **--xengsort_info:** Xengosrt info table filepath to be used in xengsort classify step
+  
+<a name="sec3.3.3"></a>
 ### Command Line Implementation:
 ```
 # Print Help Function Call
-python scripts/species_parser.py --help
+xenomake species --help
 
 # Create species folder 
-python <reop_dir>/scripts/species_parser.py \
+xenomake species
 --mouse_ref <mouse_reference_assembly.fa> \
 --human_ref <human_reference_assemble.fa> \
 --mouse_annotation <mouse_annotation.gtf> \
 --human_annotaion <human_annotation.gtf> \
 ```
-<a name="sec3.2.4"></a>
+<a name="sec3.3.4"></a>
 ### Output Message
 ```
 species directory successfully completed, keep project execution in the current directory
 ```
-
 ### Output Directory Structure
 **├─ species** <br>
 │   ├── idx.hash <br>
@@ -189,91 +268,70 @@ species directory successfully completed, keep project execution in the current 
 │   │   ├── genome.fa <br>
 │   │   ├── annotation.gtf <br>
 │   │   ├── star_index/ 
-<a name="sec3.3"></a>
-## Step 2: Project Configuration
-This is a **REQUIRED** step to initialize your implementation of the xenomake pipeline
-<a name="sec3.3.1"></a>
-### Description
-config.py generates a .yaml file that is referenced by snakemake that defines locations of inputs, dependencies, filenames, and output directory
-<a name="sec3.3.2"></a>
-### Required Flags:
-- **--repository**: path to cloned Xenomake Directory
-- **--r1:** paired-end read in fastq format <br>
-- **--r2:** second paired-end read <br>
-- **--outdir:** name of project directory where the output file will be written <br>
-- **--sample:** name of sample to prepend filenames
-- **--repository**:path to the xenomake cloned repository on a home system
 
-### Optional Flags:
-- **--threads**: number of cores to use<br>
-- **--picard**: path to user preferred picard.jar tool<br>
-- **--dropseq_tools**: path to user preferred download of dropseq tools directory<br>
-- **--downstream**: performs downstream processing using scanpy (default: True) <br>
-- **--genic_only**: only uses UTR and Exonic reads for umi matrix (default: True) <br>
-- **--mouse_assembly**: version of mouse genome used (default: mm10) <br>
-- **--human_assembly**: version of human genome used (default: hg38) <br>
-- **--barcode**: list of visium barcodes (default: visium v2) <br>
-- **--ambiguous**: handle multimap from "both" and "ambiguous" output reads (default: True)
-<a name="sec3.3.3"></a>
-### Command Line Implementation:
-```
-# Print Help Function Call
-python scripts/config.py --help
-
-# Create config.yaml 
-python <reop_dir>/scripts/config.py \
---repository <path_to_Xenomake_dir>
---r1 <sample_R1.fastq.gz> \
---r2 <sample_R2.fastq.gz> \
---outdir <dir_name> \
---sample <sample_name> \
---threads <n_threads>
-```
-<a name="sec3.3.4"></a>
-### Output Message
-Prints When config.py completes successfully
-```
-assembly versions ['hg38', 'mm10']
-downstream processing: True
-ambiguous reads handling: True
-cores: 8
-project "downsampled" initialized, proceed to snakemake execution
-```
-
-### Example Configuration File
-![config.yaml](https://github.com/istrope/Xenomake/blob/main/figures/config.png)
 <a name="sec3.4"></a>
-## Step 3: Run Snakemake Pipeline
+## Step 3: Xenomake Config (custom run)
 <a name="sec3.4.1"></a>
+### Description
+Only necessary ***if you selected custom*** for either *run_mode* or *spatial_mode* as a part of xenomake init
+<a name="sec3.4.2"></a>
+### Spatial Flags
+- **--barcode_file**: <br>
+- **--umi**: <br>
+- **--cell_bc**: <br>
+- **--beads**: <br>
+- **spot_diameter_um**: <br>
+- **slide_size_um**: <br>
+### Run Flags
+- **downstream**: <br>
+- **mm_reads**: <br>
+- **genic_only**: <br>
+- **--ambiguous**: <br>
+### Command Line Implementation:
+if ***spatial_mode***: custom
+```
+xenomake config \
+--barcode_file <path to spot/cell barcode file> \
+--umi <umi structure in units of bases> \
+--cell_bc <barcode structure in unit of bases> \
+--beads <number of spots/beads in spatial array> \
+--spot_diameter_um <diameter of spot in um> \
+--slide_size_um <diameter of slide in um>
+```
+if ***run_mode*** : custom
+```
+xenomake config \
+--downstream <downstream processing (True/False)> \
+--mm_reads <count multi-mapped reads (True/False)> \
+--genic_only <only count genic reads in final count matrix (True/False)> \
+--ambiguous <partition xenograft 'ambiguous' reads back into alignments (True/False)>
+```
+<a name="sec3.4.3"></a>
+<a name="sec3.5"></a>
+## Step 4: Execute Project
+<a name="sec3.5.1"></a>
 ### Snakemake
 Xenomake uses the Snakemake workflow management system to create reproducible and scalable data analyses <br>
 To get an understanding of snakemake, please visit: https://snakemake.github.io/ <br>
 For additional information, read Snakemake's paper https://doi.org/10.12688/f1000research.29032.1
 
-<a name="sec3.4.2"></a>
+<a name="sec3.5.2"></a>
 ### Dry Run
-It is recommended to first execute a dry-run with flag **-n**, Snakemake will only show the execution plan instead of performing steps. <br>
-### Requirements: <br>
-**-s**: snakemake file containing final target files <br>
-by default, snakemake searches for a Snakemake.smk file, but for Xenomake the target files are contained within main.smk <br>
-**-n**: Dry-Run showing the workflow <br>
-**--cores**: Number of cores to run Xenomake workflow with (**required**)
+It is recommended to first execute a dry-run with flag **--dry-run**, Xenomake will only show the execution plan instead of performing steps. <br>
+<a name="sec3.5.3"></a>
+### Flags: <br>
+**-cores**: number of cores to use for project run <br>
+**--dry-run**: Dry-Run showing the workflow <br>
+**--rerun-incomplete**: Force to rerun incompletely generated files if project halted <br>
+**--keep-going**: If a job fails, keep executing independent jobs that don't rely on its output <br>
 ```
-# Dry Run
-snakemake -s <source_dir>/snakemake/main.smk -n --cores 8
-```
-<a name="sec3.4.3"></a>
-### Execute Xenomake Workflow
-note: species directory and config.yaml need to be created from previous steps <br>
-### Flags
-**-s**: Snakemake target file <br>
-**--cores**: number of cores used for execution <br>
-**--keep-going**: Snakemake flag that will continue the workflow when possible if a single job fails but is not required for subsequent steps
-```
-snakemake -s <source_dir>/snakemake/main.smk --cores <n_threads> --keep-going
+#Dry Run
+xenomake run --cores <n_cores> --dry-run
+#Run Project
+xenomake run --cores <n_cores> --keep-going
 ```
 
-<a name="sec3.4.4"></a>
+<a name="sec3.5.4"></a>
 ### Example Snakemake Standard Outs
 Below shows an example of the messages printed by Snakemake. Briefly, they give an overview of the jobs in line for execution and print messages when a rule is being performed. This includes a few important features: <br> <br>
 
@@ -332,7 +390,7 @@ Finished job 0.
 
 ```
 
-<a name="sec3.4.5"></a>
+<a name="sec3.5.5"></a>
 ### Output Directory Structure
 ├─ **OUTDIR** <br>
 **│   ├── sample**<br>
