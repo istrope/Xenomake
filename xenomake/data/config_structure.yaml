@@ -1,0 +1,40 @@
+project:
+    r1: None
+    r2: None
+    sample: None
+    project: None
+    spatial_mode: None
+    run_mode: None
+    root_dir: '/tmp'
+    project_dir: ''
+    download_species: False
+    download_index: False
+    dropseq_tools: 'Drop-seq_tools-2.5.3/'
+    picard: 'picard.jar'
+
+run:
+    mm_reads: None
+    ambiguous: None
+    downstream: None
+    genic_only: None
+    polyA_trimming: None
+
+spatial:
+    alignment_tags : "CR:{cell},CB:{cell},MI:{UMI},RG:{assigned}"
+    barcode_file: None
+    spot_diameter_um: None
+    spot_distance_um: None
+    beads: None
+    cell_barcode: None
+    umi: None
+
+#species:
+ #   mouse_ref: None
+  #  mouse_annotation: None
+   # mouse_index: None
+   # human_ref: None
+   # human_annotation: None
+   # human_index: None
+   # xengsort_hash: None
+   # xengsort_info: None
+    

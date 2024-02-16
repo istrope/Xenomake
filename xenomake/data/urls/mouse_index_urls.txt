@@ -1,0 +1,16 @@
+https://zenodo.org/records/10655615/files/chrLength.txt
+https://zenodo.org/records/10655615/files/chrName.txt
+https://zenodo.org/records/10655615/files/chrNameLength.txt
+https://zenodo.org/records/10655615/files/chrStart.txt
+https://zenodo.org/records/10655615/files/exonGeTrInfo.tab
+https://zenodo.org/records/10655615/files/exonInfo.tab
+https://zenodo.org/records/10655615/files/geneInfo.tab
+https://zenodo.org/records/10655615/files/Genome
+https://zenodo.org/records/10655615/files/genomeParameters.txt
+https://zenodo.org/records/10655615/files/Log.out
+https://zenodo.org/records/10655615/files/SA
+https://zenodo.org/records/10655615/files/SAindex
+https://zenodo.org/records/10655615/files/sjdbInfo.txt
+https://zenodo.org/records/10655615/files/sjdbList.fromGTF.out.tab
+https://zenodo.org/records/10655615/files/sjdbList.out.tab
+https://zenodo.org/records/10655615/files/transcriptInfo.tab

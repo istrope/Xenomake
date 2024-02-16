@@ -1,0 +1,4 @@
+https://zenodo.org/records/10655403/files/GRCh38.p14.fna.gz
+https://zenodo.org/records/10655403/files/GRCh38.p14.gtf.gz
+https://zenodo.org/records/10655403/files/GRCm39.fna.gz
+https://zenodo.org/records/10655403/files/GRCm39.gtf.gz
