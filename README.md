@@ -93,7 +93,13 @@ https://broadinstitute.github.io/picard/
 ### Quickstart: Initialize Xenomake:
 ```
 #Initialize Xenomake
-xenomake init
+xenomake init \
+	-r1 <read1> \
+	-r2 <read2> \
+	-s <sample name> \
+	-o <output directory> \
+	--spatial_mode <preset spatial mode [visium,dbit-seq,seq-scope] or custom> \
+	--run_mode <preset run mode [lenient,prude] or custom> \
 ```
 
 ### Quickstart: Add Species Information:
@@ -103,14 +109,14 @@ xenomake species --help
 
 # Create species folder 
 xenomake species \
---mouse_ref <mouse_reference_assembly.fa> \
---human_ref <human_reference_assemble.fa> \
---mouse_annotation <mouse_annotation.gtf> \
---human_annotaion <human_annotation.gtf> \
+	-mr <mouse_reference_assembly.fa> \
+	-hr <human_reference_assemble.fa> \
+	-ma <mouse_annotation.gtf> \
+	-ha <human_annotation.gtf> \
 ```
 
 ### Quickstart: Spatial Configuration:
-If default run mode and spatial mode, this step can be skipped <br>
+***If default run mode and spatial mode, this step can be skipped*** <br>
 If 'custom' run mode or spatial mode, you must input the following parameters
 ```
 # Print Help Function Call
@@ -118,16 +124,16 @@ xenomake spatial --help
 
 # Create configuration file
 xenomake spatial \
---barcode_file <sample_R1.fastq.gz> \
---umi <sample_R2.fastq.gz> \
---cell_barcode <dir_name> \
---beads <sample_name> \
---spot_diameter_um <n_threads> \
---slide_size_um \
---ambiguous \
---downstream \
---genic_only \
---mm_reads
+	--barcode_file <barcode whitelist> \
+	--umi <umi structure> \
+	--cell_barcode <cell barcode structure> \
+	--beads <number of spots/beads> \
+	--spot_diameter_um <spot diameter> \
+	--slide_size_um <slide size> \
+	--ambiguous <re-partition ambiguous reads from xenograft sorting> \
+	--downstream <perform downstream data processing> \
+	--genic_only <only count genic reads (i.e., no UTR, intergenic,intronic> \
+	--mm_reads <if read is mult-imapped, choose most likely position>
 ```
 
 
@@ -136,7 +142,8 @@ xenomake spatial \
 # Dry Run
 xenomake run -n 
 # Initialize Xenomake Pipeline (species dir and config.yaml need to be created)
-xenomake run --cores <n_threads> --keep_going
+xenomake run \
+	--cores <n_threads>
 ```
 <a name="sec3.1.2"></a>
 ### Memory Requirements and Runtimes
@@ -172,17 +179,14 @@ This is a **REQUIRED** step to initialize your implementation of the xenomake pi
 	
 	1. visium <br>
 	2. slide-seq <br>
-	3. hdst-seq <br>
-	4. stereo-seq <br>
-	5. pixel-seq <br>
 	6. dbit-seq <br>
 	7. custom: User Defined barcode structure, umi structure, spot size, slide size, barcode file, number of beads/spots
 </p>
 
 <a name="sec3.2.2"></a>
-- **--r1:** paired-end read in fastq format <br>
-- **--r2:** second paired-end read <br>
-- **--project:** name of project directory where the output file will be written <br>
+- **--read1:** paired-end read in fastq format <br>
+- **--read2:** second paired-end read <br>
+- **--outdir:** name of project directory where the output file will be written <br>
 - **--sample:** name of sample to prepend filenames and create sample directory within the project directory
 - **--spatial_mode:** preset run modes based upon spatial method used [custom,visium,slide_seq,hdst_seq,stereo_seq,pixel_seq,dbit_seq]
 - **--run_mode:** preset run modes based upon read processing. This controls multi-mapped, ambiguous, and non-genic read handling [custom, prude, lenient]
@@ -201,13 +205,13 @@ This is a **REQUIRED** step to initialize your implementation of the xenomake pi
 xenomake init --help
 
 #Initialize Project
-xenomake init
---r1 <sample_R1.fastq.gz> \
---r2 <sample_R2.fastq.gz> \
---project <project_name> \
---sample <sample_name> \
---spatial_mode <spatial_name> \
---run_mode <custom, lenient, spatial>
+xenomake init \
+	-r1 <sample_R1.fastq.gz> \
+	-r2 <sample_R2.fastq.gz> \
+	-o <project_name> \
+	-s <sample_name> \
+	--spatial_mode <spatial_name> \
+	--run_mode <custom, lenient, spatial>
 ```
 <a name="sec3.2.4"></a>
 ### Output Message
@@ -215,7 +219,7 @@ xenomake init
 sample name: A1
 spatial chemistry: visium
 run mode: lenient
-project "downsampled" initialized, proceed to snakemake execution
+project "downsampled" initialized, proceed to species setup and project execution
 ```
 
 ### Example Configuration File
@@ -248,11 +252,11 @@ These two rules can be time-consuming and if these files are already generated, 
 xenomake species --help
 
 # Create species folder 
-xenomake species
---mouse_ref <mouse_reference_assembly.fa> \
---human_ref <human_reference_assemble.fa> \
---mouse_annotation <mouse_annotation.gtf> \
---human_annotaion <human_annotation.gtf> \
+xenomake species \
+	--mouse_reference <mouse_reference_assembly.fa> \
+	--human_reference <human_reference_assemble.fa> \
+	--mouse_annotation <mouse_annotation.gtf> \
+	--human_annotaion <human_annotation.gtf> \
 ```
 <a name="sec3.3.4"></a>
 ### Output Message
@@ -294,20 +298,20 @@ Only necessary ***if you selected custom*** for either *run_mode* or *spatial_mo
 if ***spatial_mode***: custom
 ```
 xenomake config \
---barcode_file <path to spot/cell barcode file> \
---umi <umi structure in units of bases> \
---cell_bc <barcode structure in unit of bases> \
---beads <number of spots/beads in spatial array> \
---spot_diameter_um <diameter of spot in um> \
---slide_size_um <diameter of slide in um>
+	--barcode_file <path to spot/cell barcode file> \
+	--umi <umi structure in units of bases> \
+	--cell_bc <barcode structure in unit of bases> \
+	--beads <number of spots/beads in spatial array> \
+	--spot_diameter_um <diameter of spot in um> \
+	--slide_size_um <diameter of slide in um>
 ```
 if ***run_mode*** : custom
 ```
 xenomake config \
---downstream <downstream processing (True/False)> \
---mm_reads <count multi-mapped reads (True/False)> \
---genic_only <only count genic reads in final count matrix (True/False)> \
---ambiguous <partition xenograft 'ambiguous' reads back into alignments (True/False)>
+	--downstream <downstream processing (True/False)> \
+	--mm_reads <count multi-mapped reads (True/False)> \
+	--genic_only <only count genic reads in final count matrix (True/False)> \
+	--ambiguous <partition xenograft 'ambiguous' reads back into alignments (True/False)>
 ```
 <a name="sec3.4.3"></a>
 <a name="sec3.5"></a>
