@@ -71,6 +71,9 @@ conda env create -n xenomake -f environment.yaml
 
 # Activate conda environment
 conda activate xenomake
+
+#install xenomake
+pip install xenomake
 ```
 
 <a name="sec3"></a>
