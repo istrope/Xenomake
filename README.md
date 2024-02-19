@@ -70,10 +70,6 @@ conda env create -n xenomake -f environment.yaml
 # Activate conda environment
 conda activate xenomake
 ```
-### Install Xenomake
-```
-pip install xenomake
-```
 <a name="sec2.2"></a>
 ## Download Dropseq (optional)
 Current version of Dropseq-tools is 2.5.3 and is present at <repo_dir>/tools/Dropseq-2.5.3/ <br>
