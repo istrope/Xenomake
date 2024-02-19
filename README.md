@@ -5,7 +5,6 @@
     1.4. [Publication](#sec1.4)</br>
 2. [Installation](#sec2)</br>
     2.1. [Create conda environment and build dependencies](#sec2.1)</br>
-    2.2. [Download optional tools](#sec2.2)</br>
 3. [Running Xenomake](#sec3)</br>
     3.1. [QuickStart](#sec3.1)<br>
  	3.1.2 [Memory Requirements and Runtimes](#sec3.1.2)<br>
@@ -38,6 +37,9 @@
 6. [Test Dataset](#sec6)</br>
 	6.1. [Download Data](#sec6.1)</br>
 	6.2. [Run Xenomake Pipeline](#sec6.2)</br>
+7. [Optional Downloads](#sec7) <br>
+	7.1. [Dropseq](#sec7.1) <br>
+ 	7.2. [Picard](#sec7.2) <br>
        
 <a name="sec1"></a>
 # About Xenomake
@@ -70,20 +72,7 @@ conda env create -n xenomake -f environment.yaml
 # Activate conda environment
 conda activate xenomake
 ```
-<a name="sec2.2"></a>
-## Download Dropseq (optional)
-Current version of Dropseq-tools is 2.5.3 and is present at <repo_dir>/tools/Dropseq-2.5.3/ <br>
-For updated versions check:
-https://github.com/broadinstitute/Drop-seq 
-## Download Picard (optional)
-### Version Control
-The provided picard.jar file is currently compatible with Java installed in the Xenomake conda environment. <br>
-Java: v11.0.15 <br>
-Picard: v2.27.5 <br>
 
-### Picard Github
-If you choose to use your own Picard executable, ensure compatibility with Java <br>
-https://broadinstitute.github.io/picard/
 <a name="sec3"></a>
 # Running Xenomake
 
@@ -557,3 +546,21 @@ Allow time for Xengsort Indexing and STAR indexing (This is the longest part)
 ```
 snakemake -s snakemake/main.smk --cores 8
 ```
+
+<a name="sec7.0"></a>
+## Optional Downloads
+<a name="sec7.1"></a>
+### Download Dropseq
+Current version of Dropseq-tools is 2.5.3 and is present at <repo_dir>/tools/Dropseq-2.5.3/ <br>
+For updated versions check:
+https://github.com/broadinstitute/Drop-seq 
+<a name="sec7.2"></a>
+### Download Picard
+#### Version Control
+The provided picard.jar file is currently compatible with Java installed in the Xenomake conda environment. <br>
+Java: v11.0.15 <br>
+Picard: v2.27.5 <br>
+
+#### Picard Github
+If you choose to use your own Picard executable, ensure compatibility with Java <br>
+https://broadinstitute.github.io/picard/
