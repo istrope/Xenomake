@@ -1,4 +1,3 @@
-import sys
 import os
 
 from xenomake.errors import *
@@ -53,4 +52,6 @@ def str2bool(var):
         return False
     else:
         raise ValueError(f'variable should be boolean or one of {bool_in_str}')
-    
+
+def match_default(key,cf):
+    return cf.variables[key]

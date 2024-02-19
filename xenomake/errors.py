@@ -1,15 +1,16 @@
 import os
-import logging
 
 class XenomakeError(Exception):
     def __init__(self,msg=None):
         self.msg = msg
 
     def __str__(self):
+        if self.msg is None:
+            return self.msg
+        
         msg = 'ERROR: ' + str(self.__class__.__name__) + '\n'
-
-        if hasattr(self,'msg') and self.msg is not None:
-            msg += self.msg
+        return msg + self.msg
+        
 
 
 class FileWrongExtensionError(XenomakeError):

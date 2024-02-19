@@ -1,6 +1,7 @@
 import argparse
 import os
 import yaml
+import xenomake
 from xenomake.utils import str2bool
 from xenomake.errors import *
 
@@ -14,34 +15,30 @@ def setup_config_parser(parent_parser):
         help = 'handle multimap from "both" and "ambiguous" output reads (Must be boolean True/False)',
         required=False,
         default=None,
-        type=bool
     )
     parser_config.add_argument(
         '--mm_reads',
         help='assign multimapped reads to highest confidence position',
         required=False,
         default=None,
-        type=bool
     )
     parser_config.add_argument(
         '--downstream',
         help = 'Performs Scanpy Processing of Data (Must be boolean True/False)',
         required = False,
         default = None,
-        type = bool
     )
     parser_config.add_argument(
         '--genic_only',
         help='use only genic/exonic reads and excluse flags for intergenic,intronic',
-        type=bool,
         default=None,
         required = False
     )
     parser_config.add_argument(
-        '--barcode',type=str,help='barcode file used to demultiplex samples in digitial gene expression. default is visium',
-        default='barcodes/visium-v2.txt',
+        '--barcode',
+        type=str,help='barcode file used to demultiplex samples in digitial gene expression. default is visium',
+        default=None,
         required=False,
-        default=None
     )
     parser_config.add_argument(
         '--umi',
@@ -82,7 +79,6 @@ def setup_config_parser(parent_parser):
         '--polyA_trimming',
         required=False,
         help='trim poly A tails off of reads before mapping',
-        type=bool,
         default=None
     )
     return parser_config
@@ -134,8 +130,7 @@ class Spatial_Setup(ConfigMainVariable):
         )
 
 class ConfigFile:
-    #initial_path = os.path.join(os.path.dirname(__file__),'data/config_structure.yaml')
-    initial_path = 'data/config_structure.yaml'
+    initial_path = os.path.join(xenomake.__path__[0],'data/config_structure.yaml')
 
     main_variables_pl2sg = {
         'project',
@@ -217,7 +212,7 @@ class ConfigFile:
                 variable_name_sg = self.main_variables_pl2sg[variable_name]
                 raise ConfigVariableNotFoundError(variable_name_sg,key)
 
-    def check_project(self,r1 = None,r2 = None,sample = None,project = None,spatial_mode = None,run_mode = None):
+    def check_project(self):
         defaults = {
             'run_mode': {'lenient','prude','custom'},
             'spatial_mode': {'visium','seq-scope','dbit-seq','custom'}
@@ -225,7 +220,7 @@ class ConfigFile:
         }
         project_vars = self.variables['project']
         
-        for key,value in project_vars:
+        for key,value in project_vars.items():
             if (value  == '') or (value == None):
                 raise EmptyConfigVariableError(key)
             
