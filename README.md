@@ -173,6 +173,7 @@ This is a **REQUIRED** step to initialize your implementation of the xenomake pi
 </p>
 
 <a name="sec3.2.2"></a>
+### Required Flags:
 - **--read1:** paired-end read in fastq format <br>
 - **--read2:** second paired-end read <br>
 - **--outdir:** name of project directory where the output file will be written <br>
