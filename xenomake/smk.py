@@ -236,8 +236,8 @@ def process_species_args(args):
         assert_file(args['mouse_reference'],default_value=None,extension=[".fa",".fna",".fa.gz",".fna.gz"])
         assert_file(args['human_reference'],default_value=None,extension=[".fa",".fna",".fa.gz",".fna.gz"])
 
-        assert_file(args['mouse_annotation'],default_value=None,extension=[".gtf",".gtf.gz"])
-        assert_file(args['human_annotation'],default_value=None,extension=[".gtf",".gtf.gz"])
+        assert_file(args['mouse_annotation'],default_value=None,extension=[".gtf"])
+        assert_file(args['human_annotation'],default_value=None,extension=[".gtf"])
 
         #create symlinked directory for standard access in pipeline execution
         os.system('ln --force --symbolic "$(readlink --canonicalize %s)" species/human/annotation.gtf' % args['human_annotation'])
@@ -284,6 +284,7 @@ def xenomake_init(args):
     if args['download_species']:
         species_urls = os.path.join(xenomake.__path__[0],'data/urls/species_urls.txt')
         os.system('wget -i %s' %species_urls)
+        os.system('gunzip *.gtf.gz')
 
     if args['download_index']:
         #set paths to url files
