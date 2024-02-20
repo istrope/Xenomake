@@ -1,0 +1,45 @@
+visium:
+    barcode_file: 'barcode/visium_barcodes.txt'
+    spot_diameter_um: 55
+    width_um: 6500
+    beads: 4992
+    umi: '17-28'
+    cell_barcode: '1-16'
+    polyA_trimming: False
+    
+#look into how to pull from read2 umi tag
+seq-scope:
+    barcode_file: None
+    spot_diameter_um: 1
+    width_um: 1000
+    beads: 1000
+    umi: '1-9'
+    cell_barcode: '1-20'
+    polyA_trimming: False
+
+slide-seq:
+    barcode_file: None
+    spot_diameter_um: 10
+    width_um: 3000
+    beads: 100000
+    umi: '15-23'
+    cell_barcode: '1-14'
+    polyA_trimming: True
+
+hdst:
+    barcode_file: None
+    spot_diameter_um: 2
+    width_um: None
+    beads: None
+    umi: None
+    cell_barcode: None
+    polyA_trimming: False
+
+dbit:
+    barcode_file: 'barcodes/dbit_barcodes.txt'
+    spot_diameter_um: 10
+    width_um: None
+    beads: 2500
+    umi: '23-32'
+    cell: '33-40'
+    polyA_trimming: False

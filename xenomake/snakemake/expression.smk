@@ -13,11 +13,26 @@ threads=config['threads']
 dropseq=config['dropseq_tools']
 picard=config['picard']
 repo=config['repository']
+
 #############################################
 #           CREATE COUNT MATRIX
 #############################################
 locus_1 = "LOCUS_FUNCTION_LIST=CODING LOCUS_FUNCTION_LIST=UTR"
 locus_2 = ['INTERGENIC', 'INTRONIC', 'UTR', 'CODING', 'RIBOSOMAL']
+
+if config['spatial_mode'] == 'seq-scope'
+    rule CreateBarcodes:
+        input:
+            r1=config['r1']
+            r2=config['r2']
+        output:
+            coordinates='spatial_coordinates.txt',
+            whitelist='whitelist.txt'
+        params:
+            hdmilength=20
+        shell:
+            "{repo}/{scripts}/extract_seqscope_coordinates.sh {input.r1} {input.r2} {params.hdmilength}"
+
 rule DGE_Mouse:
     input:
         barcodes=config['repository'] +'/' + config['barcode'],

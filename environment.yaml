@@ -7,7 +7,7 @@ channels:
     - numba
 dependencies:
     - python>=3.10
-    - snakemake>=5.32.0,<6.4.0
+    - snakemake>=5.32.0,<7.32.4
     - star>=2.7.1a
     - samtools>=1.13
     - sambamba>=0.6.8
@@ -16,6 +16,7 @@ dependencies:
     - pot
     - openjdk==11.0.15
     - pigz
+    - xengsort==2.0.1
     - pip:
         - pandas>=1.3.0,<=1.5.1
         - scanpy>=1.8.1

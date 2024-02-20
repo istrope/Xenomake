@@ -144,6 +144,5 @@ rule Extract_Xenograft_Readnames:
         zcat {input.ambiguous} |grep "@"|sed "s/@//g"| sort -u > {output.ambiguous}
         zcat {input.neither} |grep "@"|sed "s/@//g"| sort -u > {output.neither}
         zcat {input.both} |grep "@"|sed "s/@//g"| sort -u > {output.both}
-
         """
 
