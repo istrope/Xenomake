@@ -63,6 +63,7 @@ def setup_init_parser(parent_parser):
         help='use preset run modes to determine how ambiguous reads, multimapped reads, polyA tails, and intergenic sequences get processed'+
         '\nuse: [prude,lenient,custom]',
         default='lenient',
+        required=True,
         type=str
     )
     parser_init.add_argument(
@@ -411,16 +412,12 @@ parser_config=None
 
 #Xenomake Init
 parser_init = setup_init_parser(parser_main_subparsers)
+parser_species = setup_species_parser(parser_main_subparsers)
 
-
-
-#Xenomake Species Setup
-if os.path.isfile(config_path):
-    #Xenomake Config
-    parser_spatial = setup_config_parser(parser_main_subparsers)
-    parser_species = setup_species_parser(parser_main_subparsers)
-    #Run Xenomake
-    parser_run = setup_run_parser(parser_main_subparsers)
+#Xenomake Config
+parser_config = setup_config_parser(parser_main_subparsers)
+#Run Xenomake
+parser_run = setup_run_parser(parser_main_subparsers)
 
 
 def cmdline():
