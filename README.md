@@ -7,27 +7,27 @@
     2.1. [Create conda environment and build dependencies](#sec2.1)</br>
 3. [Running Xenomake](#sec3)</br>
     3.1. [QuickStart](#sec3.1)<br>
- 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.1.2 [Memory Requirements and Runtimes](#sec3.1.2)<br>
+ 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.1.2 [Memory Requirements and Runtimes](#sec3.1.2)<br>
     3.2. [Step1: Xenomake Init](#sec3.2)</br>
-    		3.2.1. [Description](#sec3.2.1)<br>
-		3.2.2. [Flags](#sec3.2.2)<br>
-		3.2.3. [Command Line Implementation](#sec3.2.3)<br>
-		3.2.4. [Output](#sec3.2.4)<br>
+    		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.2.1. [Description](#sec3.2.1)<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.2.2. [Flags](#sec3.2.2)<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.2.3. [Command Line Implementation](#sec3.2.3)<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.2.4. [Output](#sec3.2.4)<br>
     3.3. [Step2: Xenomake Species](#sec3.3)<br>
-    		3.3.1 [Description](#sec3.3.1)<br>
-		3.3.2 [Flags](#sec3.3.2)<br>
-		3.3.3. [Command Line Implementation](#sec3.3.3)<br>
-		3.3.4. [Output](#sec3.3.4)<br>
+    		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.3.1 [Description](#sec3.3.1)<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.3.2 [Flags](#sec3.3.2)<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.3.3. [Command Line Implementation](#sec3.3.3)<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.3.4. [Output](#sec3.3.4)<br>
     3.4 [Step3: Xenomake Config](#sec3.4)<br>
-   		3.4.1 [Decsription](#sec3.4.1)<br>
-     		3.4.2 [Flags](#sec3.4.2)<br>
-       		3.4.3 [Command Line Implementation](#sec3.4.3)<br>
+   		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.4.1 [Decsription](#sec3.4.1)<br>
+     		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.4.2 [Flags](#sec3.4.2)<br>
+       		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.4.3 [Command Line Implementation](#sec3.4.3)<br>
     3.5. [Step3: Run Snakemake Pipeline](#sec3.4)</br>
-		3.5.1. [Snakemake Description](#sec3.4.1)<br>
-		3.5.2. [Dry Run](#sec3.4.2)<br>
-		3.5.3. [Execute Snakemake Workflow](#sec3.4.3)<br>
-		3.5.4. [Snakemake Standard Outs](#sec3.4.4)<br>
-		3.5.5. [Xenomake Output Structure](#sec3.4.4)<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.5.1. [Snakemake Description](#sec3.4.1)<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.5.2. [Dry Run](#sec3.4.2)<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.5.3. [Execute Snakemake Workflow](#sec3.4.3)<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.5.4. [Snakemake Standard Outs](#sec3.4.4)<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.5.5. [Xenomake Output Structure](#sec3.4.4)<br>
 4. [Downstream Cell-Cell Interactions](#sec4)<br>
 5. [QC](#sec5)</br>
     5.1. [Scanpy QC Plots](#sec5.1)</br>
