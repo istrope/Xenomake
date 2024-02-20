@@ -504,8 +504,7 @@ Example of top 4 spots with highest expression
 | CCAAGAAAGTGGGCGA | 367515          | 54742           | 8306      |
 <a name="sec6"></a>
 # Run Xenomake on Medulloblastoma Test Dataset
-Follow Installation Instructions for Xenomake if not done already <br>
-Perform all subsequent steps within Xenomake Directory
+Follow Installation Instructions for Xenomake if not done already
 <a name="sec6.1"></a>
 ## Dataset
 Paired End Fastq Files Downsamples to 8.4 million reads <br>
