@@ -106,8 +106,7 @@ rule Xengsort_Clasify:
         graft='{OUTDIR}/{sample}/xengsort/{sample}-graft.fq.gz',
         ambiguous='{OUTDIR}/{sample}/xengsort/{sample}-ambiguous.fq.gz',
         neither='{OUTDIR}/{sample}/xengsort/{sample}-neither.fq.gz',
-        both='{OUTDIR}/{sample}/xengsort/{sample}-both.fq.gz',
-        unclassified='{OUTDIR}/{sample}/xengsort/{sample}-unclassified.fq.gz'
+        both='{OUTDIR}/{sample}/xengsort/{sample}-both.fq.gz'
     threads: config['threads']
     params:
         index='species/idx',
