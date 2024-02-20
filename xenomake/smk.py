@@ -227,25 +227,24 @@ def populate_default_runmode(args):
     return run_args
    
 def process_species_args(args):
-        print(args)
         #check files have correct extensions
         if not os.path.exists('species'):
             os.system('mkdir species')
             os.system('mkdir species/human')
             os.system('mkdir species/mouse')
         
-        assert_file(args['mouse_ref'],default_value=None,extension=[".fa",".fna",".fa.gz",".fna.gz"])
-        assert_file(args['human_ref'],default_value=None,extension=[".fa",".fna",".fa.gz",".fna.gz"])
+        assert_file(args['mouse_reference'],default_value=None,extension=[".fa",".fna",".fa.gz",".fna.gz"])
+        assert_file(args['human_reference'],default_value=None,extension=[".fa",".fna",".fa.gz",".fna.gz"])
 
         assert_file(args['mouse_annotation'],default_value=None,extension=[".gtf",".gtf.gz"])
         assert_file(args['human_annotation'],default_value=None,extension=[".gtf",".gtf.gz"])
 
         #create symlinked directory for standard access in pipeline execution
         os.system('ln --force --symbolic "$(readlink --canonicalize %s)" species/human/annotation.gtf' % args['human_annotation'])
-        os.system('ln --force --symbolic "$(readlink --canonicalize %s)" species/human/genome.fa' % args['human_ref'])
+        os.system('ln --force --symbolic "$(readlink --canonicalize %s)" species/human/genome.fa' % args['human_reference'])
         
         os.system('ln --force --symbolic "$(readlink --canonicalize %s)" species/mouse/annotation.gtf' % args['mouse_annotation'])
-        os.system('ln --force --symbolic "$(readlink --canonicalize %s)" species/mouse/genome.fa' % args['mouse_ref'])
+        os.system('ln --force --symbolic "$(readlink --canonicalize %s)" species/mouse/genome.fa' % args['mouse_reference'])
         if 'human_index' in args:
             check_index(args['human_index'])
             os.system('ln --force --symbolic "$(readlink --canonicalize %s)" species/human/star_index' % args['human_index'])
@@ -258,7 +257,7 @@ def process_species_args(args):
             os.system('ln --force --symbolic "$(readlink --canonicalize %s)" species/idx.hash' % args['xengsort_hash'])
             os.system('ln --force --symbolic "$(readlink --canonicalize %s)" species/idx.info' % args['xengsort_info'])
 
-        print('species directory successfully completed, keep project execution in current directory')
+        print('\n species directory successfully completed, keep project execution in current directory')
 
 def xenomake_init(args):
     if os.path.isfile(config_path):
@@ -306,10 +305,10 @@ def xenomake_init(args):
         run_config = populate_default_runmode(args)
         cf.variables['run'] = run_config
 
-    print('sample name: %s \n' % args['sample'])
-    print('spatial chemistry: %s \n' % args['spatial_mode'])
-    print('run mode: %s \n' % args['run_mode'])
-    print('project %s initialized, proceed to species setup and project execution' % args['output'])
+    print('\nsample name: %s' % args['sample'])
+    print('spatial chemistry: %s' % args['spatial_mode'])
+    print('run mode: %s' % args['run_mode'])
+    print('project %s initialized, proceed to species setup and project execution' % args['outdir'])
     cf.dump()
 
 
@@ -381,6 +380,8 @@ def xenomake_run(args):
     
     #load in config file and assure that all variables have been set up properly
     cf = ConfigFile.from_yaml(config_path)
+    cf.variables['project']['threads'] = args['cores']
+    cf.dump()
     cf.check_project()
 
 
