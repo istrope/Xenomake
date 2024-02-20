@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     #metadata
     name='xenomake',
-    version='1.0.0',
+    version='1.0.4',
     description='Xenomake: Processing Pipeline for Patient Derived Xenograft (PDX) Spatial Transcriptomics Datasets',
     url='https://github.com/istrope/Xenomake/',
     author='Ivy Strope',
@@ -43,3 +43,4 @@ setup(
         ],
     },
 )
+
