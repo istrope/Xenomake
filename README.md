@@ -512,45 +512,41 @@ Paired End Fastq Files Downsamples to 8.4 million reads <br>
 Taken from: https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-023-01185-4 <br>
 ### Download Dataset
 ```
-wget https://zenodo.org/records/10120014/files/sub1.fq.gz
-wget https://zenodo.org/records/10120014/files/sub2.fq.gz
-```
-### Download Genomes
-```
-wget https://zenodo.org/record/8326731/files/hg38_assembly.zip
-unzip hg38_assembly.zip
-wget https://zenodo.org/record/8326731/files/mm10_assembly.zip
-unzip mm10_assembly.zip
+wget https://zenodo.org/records/10655403/files/sub1.fq.gz
+wget https://zenodo.org/records/10655403/files/sub2.fq.gz
 ```
 <a name="sec6.2"></a>
 ## Run Xenomake Pipeline
-### Activate Xenomake Environment
+### Initialize Project
 ```
-conda activate xenomake
+xenomake init \
+	-r1 sub1.fq.gz \
+	-r2 sub2.fq.gz \
+	-s downsampled \
+	-o test_run \
+	--run_mode lenient \
+	--spatial_mode visium \
+	--download_genome True \
+	--download_index True \
+	--download_xengsort True
 ```
+### 
 ### Species Setup
 ```
-python scripts/species_parser.py \
---human_ref ncbi_dataset/data/GCF_000001405.40/GCF_000001405.40_GRCh38.p14_genomic.fna \
---human_annotation ncbi_dataset/data/GCF_000001405.40/genomic.gtf \
---mouse_ref ncbi_dataset/data/GCF_000001635.27/GCF_000001635.27_GRCm39_genomic.fna \
---mouse_annotation ncbi_dataset/data/GCF_000001635.27/genomic.gtf
+xenomake species \
+	-hr GRCh38.p14.fna.gz \
+	-ha GRCh38.p14.gtf \
+	-mr GRCm39.fna.gz \
+	-ma GRCm39.gtf \
+	--human_index human_index/ \
+	--mouse_index mouse_index/ \
+	--xengsort_hash idx.hash \
+	--xengsort_info idx.info
 ```
-### Configuration
+### Run Project
 ```
-python scripts/config.py \
---repository ./ \
---r1 test/sub1.fq \
---r2 test/sub2.fq \
---outdir out \
---sample test
+xenomake run --cores 4
 ```
-### Run Pipeline
-Allow time for Xengsort Indexing and STAR indexing (This is the longest part)
-```
-snakemake -s snakemake/main.smk --cores 8
-```
-
 <a name="sec7.0"></a>
 ## Optional Downloads
 <a name="sec7.1"></a>
