@@ -6,18 +6,14 @@ Contact: benjamin.strope@bcm.edu
 Date Created: 6/20/23
 Last Edited: 8/8/23
 '''
- ############################################
- # INCLUDE MAPPING MODULE AND POST PROCESSING
- ############################################
-configfile: 'config.yaml'
 #############################################
 #       SPECIFY WILDCARD VARIABLE
 #############################################
-OUTDIR=config['outdir']
-sample=config['sample']
-threads=config['threads']
-dropseq=config['dropseq_tools']
-picard=config['picard']
+OUTDIR=config['project']['outdir']
+sample=config['project']['sample']
+threads=config['project']['threads']
+dropseq=config['project']['dropseq_tools']
+picard=config['project']['picard']
 repo=config['repository']
 #############################################
 #       SPECIFY PARAMETERS
@@ -32,7 +28,7 @@ rule Find_Overlap_Reads:
         human='{OUTDIR}/{sample}/mapping/human_Aligned.out.bam'
     output:
         temp('{OUTDIR}/{sample}/sorting/overlapped.txt')
-    threads: config['threads']
+    threads: config['project']['threads']
     shell:
         "python {repo}/scripts/overlapped_reads.py --human {input.human} --mouse {input.mouse} --out {output}"
 
@@ -44,13 +40,13 @@ rule Remove_Overlapped_Reads:
     output:
         human=temp('{OUTDIR}/{sample}/human_remaining.bam'),
         mouse=temp('{OUTDIR}/{sample}/mouse_remaining.bam')
-    threads: config['threads']
+    threads: config['project']['threads']
     log:
         stdout='{OUTDIR}/{sample}/logs/subset_unique_reads.log'
     shell:
         """
-        java -jar {repo}/{picard} FilterSamReads I={input.mouse_bam} O={output.mouse} READ_LIST_FILE={input.overlapped_reads} FILTER=excludeReadList &>> {log.stdout}
-        java -jar {repo}/{picard} FilterSamReads I={input.human_bam} O={output.human} READ_LIST_FILE={input.overlapped_reads} FILTER=excludeReadList &>> {log.stdout}
+        java -jar {picard} FilterSamReads I={input.mouse_bam} O={output.mouse} READ_LIST_FILE={input.overlapped_reads} FILTER=excludeReadList &>> {log.stdout}
+        java -jar {picard} FilterSamReads I={input.human_bam} O={output.human} READ_LIST_FILE={input.overlapped_reads} FILTER=excludeReadList &>> {log.stdout}
         """
 
 rule Subset_Overlapped:
@@ -65,8 +61,8 @@ rule Subset_Overlapped:
         stdout='{OUTDIR}/{sample}/logs/subset_overlapped_reads.log'    
     shell:
         """
-        java -jar {repo}/{picard} FilterSamReads I={input.mouse_bam} O={output.mouse_bam} READ_LIST_FILE={input.readlist} FILTER=includeReadList &>> {log.stdout}
-        java -jar {repo}/{picard} FilterSamReads I={input.human_bam} O={output.human_bam} READ_LIST_FILE={input.readlist} FILTER=includeReadList &>> {log.stdout}
+        java -jar {picard} FilterSamReads I={input.mouse_bam} O={output.mouse_bam} READ_LIST_FILE={input.readlist} FILTER=includeReadList &>> {log.stdout}
+        java -jar {picard} FilterSamReads I={input.human_bam} O={output.human_bam} READ_LIST_FILE={input.readlist} FILTER=includeReadList &>> {log.stdout}
         """
 #############################################
 #           RUN XENOGRAFT SORTING
@@ -78,7 +74,7 @@ rule Xengsort_Index:
         mouse='species/mouse/genome.fa'
     output:
         expand('species/idx.{extension}',extension=['hash','info']),
-    threads: config['threads']
+    threads: config['project']['threads']
     params:
         index='species/idx'
     shell:
@@ -94,7 +90,7 @@ rule Make_Fastq:
         fq=temp('{OUTDIR}/{sample}/sorting/overlapped.fastq')
     shell:
         """
-        java -jar {repo}/{picard} SamToFastq I={input.bam} FASTQ={output.fq}
+        java -jar {picard} SamToFastq I={input.bam} FASTQ={output.fq}
         """
 rule Xengsort_Clasify:
     input:
@@ -106,8 +102,8 @@ rule Xengsort_Clasify:
         graft='{OUTDIR}/{sample}/xengsort/{sample}-graft.fq.gz',
         ambiguous='{OUTDIR}/{sample}/xengsort/{sample}-ambiguous.fq.gz',
         neither='{OUTDIR}/{sample}/xengsort/{sample}-neither.fq.gz',
-        both='{OUTDIR}/{sample}/xengsort/{sample}-both.fq.gz'
-    threads: config['threads']
+        both='{OUTDIR}/{sample}/xengsort/{sample}-both.fq.gz',
+    threads: config['project']['threads']
     params:
         index='species/idx',
         stdout="{OUTDIR}/{sample}/logs/xengsort_classify.log",

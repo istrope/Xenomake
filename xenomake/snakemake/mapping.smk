@@ -5,20 +5,19 @@ Contact: benjamin.strope@bcm.edu
 Last Edit: 8/18/23
 '''
 #############################################
-#       SPECIFY PARAMETERS
+#            SPECIFY PARAMETERS
 ##############################################
-cell_barcode_flags="BASE_RANGE=1-16 BASE_QUALITY=10 BARCODED_READ=1 DISCARD_READ=False TAG_NAME=CB NUM_BASES_BELOW_QUALITY=1"
-umi_flags="BASE_RANGE=17-28 BASE_QUALITY=10 BARCODED_READ=1 DISCARD_READ=False TAG_NAME=MI NUM_BASES_BELOW_QUALITY=1"
+cell_barcode_flags="BASE_RANGE=" + str(config['project']['cell_barcode']) + " " + "BASE_QUALITY=10 BARCODED_READ=1 DISCARD_READ=False TAG_NAME=CB NUM_BASES_BELOW_QUALITY=1"
+umi_flags="BASE_RANGE=" + str(config['project']['umi']) + " " + "BASE_QUALITY=10 BARCODED_READ=1 DISCARD_READ=False TAG_NAME=MI NUM_BASES_BELOW_QUALITY=1"
 star_mapping_flags="--readFilesCommand samtools view -f 4 --readFilesType SAM SE --outSAMtype BAM Unsorted --genomeLoad NoSharedMemory --outSAMprimaryFlag AllBestScore --outSAMattributes All --outSAMunmapped None --outStd BAM_Unsorted --limitOutSJcollapsed 5000000"
 #############################################
-#       SPECIFY WILDCARD VARIABLE
+#        SPECIFY WILDCARD VARIABLE
 #############################################
-configfile: 'config.yaml'
-OUTDIR=config['outdir']
-sample=config['sample']
-threads=config['threads']
-dropseq=config['dropseq_tools']
-picard=config['picard']
+OUTDIR=config['project']['outdir']
+sample=config['project']['sample']
+threads=config['project']['threads']
+dropseq=config['project']['dropseq_tools']
+picard=config['project']['picard']
 repo=config['repository']
 ############################################
 #     TAG,TRIM,AND PREPROCESS READS
@@ -26,8 +25,8 @@ repo=config['repository']
 
 rule Preprocess:
     input:
-        read1=config['r1'],
-        read2=config['r2']
+        read1=config['project']['r1'],
+        read2=config['project']['r2']
     output:
         processed_bam = '{OUTDIR}/{sample}/preprocess/tagged_polyA_adapter_trimmed.bam',
         summary='{OUTDIR}/{sample}/logs/Preprocess.summary'
@@ -41,11 +40,11 @@ rule Preprocess:
         stdout='{OUTDIR}/{sample}/logs/Preprocess.log'
     shell:
         """
-        java -jar {repo}/{picard} FastqToSam F1={input.read1} F2={input.read2} O=/dev/stdout {params.Fastq} |
-        {repo}/{dropseq}/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY={output.summary} {params.tagcb}|
-        {repo}/{dropseq}/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY={output.summary} {params.tagumi} |
-        {repo}/{dropseq}/TrimStartingSequence INPUT=/dev/stdin OUTPUT=/dev/stdout OUTPUT_SUMMARY={output.summary} {params.adapter} |
-        {repo}/{dropseq}/PolyATrimmer INPUT=/dev/stdin OUTPUT={output.processed_bam} OUTPUT_SUMMARY={output.summary} {params.polyA}
+        java -jar {picard} FastqToSam F1={input.read1} F2={input.read2} O=/dev/stdout {params.Fastq} |
+        {dropseq}/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY={output.summary} {params.tagcb}|
+        {dropseq}/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY={output.summary} {params.tagumi} |
+        {dropseq}/TrimStartingSequence INPUT=/dev/stdin OUTPUT=/dev/stdout OUTPUT_SUMMARY={output.summary} {params.adapter} |
+        {dropseq}/PolyATrimmer INPUT=/dev/stdin OUTPUT={output.processed_bam} OUTPUT_SUMMARY={output.summary} {params.polyA}
         """
 
 rule Generate_SE_Ubam:
@@ -54,7 +53,7 @@ rule Generate_SE_Ubam:
     output:
         bam=temp('{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam'),
         header=temp('{OUTDIR}/{sample}/preprocess/fixed_header.sam')
-    threads: config['threads']
+    threads: config['project']['threads']
     shell:
         """
         sambamba view -t {threads} -H {input.bam} > {output.header} 
@@ -76,7 +75,7 @@ rule Index_Genomes:
         human_index_file='species/human/star_index/SAindex',
         mouse_index=directory('species/mouse/star_index/'),
         mouse_index_file='species/mouse/star_index/SAindex'
-    threads: config['threads']
+    threads: config['project']['threads']
     shell:
         """
             mkdir {output.human_index} &
@@ -111,7 +110,7 @@ rule STAR_Human:
         log_final='{OUTDIR}/{sample}/mapping/human_Log.final.out',
         stdout='{OUTDIR}/{sample}/logs/human_TagGeneFunction.log'
     threads:
-        config['threads']
+        config['project']['threads']
     shell:
         """
         STAR --genomeDir {input.index} \
@@ -122,7 +121,7 @@ rule STAR_Human:
             --runThreadN {threads} | \
             python {repo}/scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | \
             sambamba sort -t {threads} -n /dev/stdin -o /dev/stdout | \
-            {repo}/{dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation} &> {log.stdout}
+            {dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation} &> {log.stdout}
         """
 
 rule STAR_Mouse:
@@ -143,7 +142,7 @@ rule STAR_Mouse:
         log_final='{OUTDIR}/{sample}/mapping/mouse_Log.final.out',
         stdout='{OUTDIR}/{sample}/logs/mouse_TagGeneFunction.log'
     threads:
-        config['threads']
+        config['project']['threads']
     shell:
         """
         STAR --genomeDir {input.index} \
@@ -154,7 +153,7 @@ rule STAR_Mouse:
             --runThreadN {threads} | \
             python {repo}/scripts/splice_bam_header.py --in-ubam {input.ubam} --in-bam /dev/stdin --out-bam /dev/stdout | 
             sambamba sort -t {threads} -n /dev/stdin -o /dev/stdout | \
-            {repo}/{dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation} &> {log.stdout}
+            {dropseq}/TagReadWithGeneFunction I=/dev/stdin O={output.aln} ANNOTATIONS_FILE={params.annotation} &> {log.stdout}
         """
 
 
