@@ -33,6 +33,15 @@ if config['project']['spatial_mode'] == 'seq-scope':
         shell:
             "{repo}/{scripts}/extract_seqscope_coordinates.sh {input.r1} {input.r2} {params.hdmilength}"
 
+if config['project']['spatial_mode'] == 'sc10x_v3':
+    rule uncompress_whitelist:
+        input:
+            '{repo}/data/barcodes/3M-febrary-2018.txt.gz'    
+        output:
+            '{repo}/data/barcodes/3M-febrary-2018.txt'
+        shell:
+            "gunzip {input}"
+
 rule DGE_Mouse:
     input:
         barcodes=config['repository'] +'/' + config['spatial']['barcode_file'],
@@ -46,10 +55,10 @@ rule DGE_Mouse:
         stdout='{OUTDIR}/{sample}/logs/mouse_dge.log'
     params:
         default = 'CELL_BARCODE_TAG=CB MOLECULAR_BARCODE_TAG=MI READ_MQ=0 TMP_DIR=/tmp',
-        locus = locus_1 if config['run']['genic_only'] else locus_2
+        locus = locus_1 if (config['run']['genic_only'] in ['True','true',True]) else locus_2
     shell:
         """
-        {dropseq}/DigitalExpression I= {input.bam} O={output.counts} \
+        {dropseq}/DigitalExpression I={input.bam} O={output.counts} \
         SUMMARY={output.summary} CELL_BC_FILE={input.barcodes} {params.default} \
         {params.locus} &> {log.stdout}
 
@@ -66,7 +75,7 @@ rule DGE_Human:
         long='{OUTDIR}/{sample}/final/{sample}_CellInteract_counts.tsv.gz'
     params:
         default = 'CELL_BARCODE_TAG=CB MOLECULAR_BARCODE_TAG=MI READ_MQ=0 TMP_DIR=/tmp',
-        locus = locus_1 if (config['run']['genic_only'] == True) else locus_2
+        locus = locus_1 if (config['run']['genic_only'] in ['True','true',True]) else locus_2
     log:
         stdout='{OUTDIR}/{sample}/logs/human_dge.log'
     shell:
@@ -77,6 +86,14 @@ rule DGE_Human:
 
         python {repo}/scripts/convert_long.py --counts {output.counts} --output {output.long}
         """
+if config['project']['spatial_mode'] == 'sc10x_v3':
+    rule uncompress_whitelist:
+        input:
+            '{repo}/data/barcodes/3M-febrary-2018.txt'    
+        output:
+            '{repo}/data/barcodes/3M-febrary-2018.txt.gz'
+        shell:
+            "gzip {input}"
 
 #Replicate hdf5 architecture used by 10x genomics
 rule HDF5_Human:

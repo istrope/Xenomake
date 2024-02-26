@@ -54,7 +54,7 @@ run_args = default + qc
 if config['project']['spatial_mode'] not in ['sc10x_v2','sc10x_v3']:
     run_args += spatial
 
-if config['run']['downstream']:
+if config['run']['downstream'] in ('true',True,'True'):
     run_args += downstream
 #############################################
 #               RUN RULE ALL

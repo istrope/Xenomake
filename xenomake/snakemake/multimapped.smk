@@ -81,7 +81,7 @@ input_mouse_b = ['{OUTDIR}/{sample}/mouse_remaining.bam',
                 '{OUTDIR}/{sample}/xengsort/mouse/{sample}-host.bam']
 rule Merge_Mouse:
     input:
-        input_mouse_a if config['run']['ambiguous'] else input_mouse_b
+        input_mouse_a if (config['run']['ambiguous'] in [True,'True','true']) else input_mouse_b
     output:
         bam=temp('{OUTDIR}/{sample}/mouse_merged.bam')
     threads: config['project']['threads']
@@ -97,7 +97,7 @@ input_human_b = ['{OUTDIR}/{sample}/human_remaining.bam',
                 '{OUTDIR}/{sample}/xengsort/human/{sample}-graft.bam']
 rule Merge_Human:
     input:
-        input_human_a if config['run']['ambiguous'] else input_human_b
+        input_human_a if (config['run']['ambiguous'] in [True,'True','true']) else input_human_b
     output:
         bam=temp('{OUTDIR}/{sample}/human_merged.bam')
     shell:
