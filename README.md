@@ -99,7 +99,7 @@ xenomake init \
 	-s <sample name> \
 	-o <output directory> \
 	--spatial_mode <preset spatial mode [visium,dbit-seq,seq-scope] or custom> \
-	--run_mode <preset run mode [lenient,prude] or custom> \
+	--run_mode <preset run mode [lenient,stringent] or custom> \
 ```
 
 ### Quickstart: Add Species Information:
