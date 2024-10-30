@@ -49,25 +49,6 @@ def setup_config_parser(parent_parser):
         required = False
         )
     parser_config.add_argument(
-        '--beads',
-        type=int,
-        help='expeted number of spots/beads for run',
-        default=None
-    )
-    parser_config.add_argument(
-        '--spot_diameter_um',
-        type =float,
-        required=False,
-        help='diameter of spot in spatial array: visium = 55um',
-        default=None
-    )
-    parser_config.add_argument(
-        '--width_um',
-        type=float,
-        required=False,help='distance between spots in um, visium = 100um',
-        default=None
-    )
-    parser_config.add_argument(
         '--cell_barcode',
         required=False,
         help = 'cell barcode structure defining the positions of umi in units of bases'
@@ -116,9 +97,6 @@ class RunMode(ConfigMainVariable):
 
 class Spatial_Setup(ConfigMainVariable):
     variable_types = {'barcode_file':str,
-                      'spot_diameter_um':float,
-                      'width_um': int,
-                      'beads':int,
                       'cell_barcode':str,
                       'umi':str}
     @property
@@ -215,7 +193,7 @@ class ConfigFile:
     def check_project(self):
         defaults = {
             'run_mode': {'lenient','prude','custom'},
-            'spatial_mode': {'visium','seq-scope','dbit-seq','custom'}
+            'spatial_mode': {'visium','seq-scope','dbit-seq','hdst','sc10x','slide-seq','custom'}
 
         }
         project_vars = self.variables['project']

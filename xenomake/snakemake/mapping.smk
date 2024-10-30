@@ -22,43 +22,58 @@ repo=config['repository']
 ############################################
 #     TAG,TRIM,AND PREPROCESS READS
 ############################################
-
-rule Preprocess:
+rule Generate_uBAM:
     input:
         read1=config['project']['r1'],
-        read2=config['project']['r2']
+        read2=config['project']['r1']
     output:
-        processed_bam = '{OUTDIR}/{sample}/preprocess/tagged_polyA_adapter_trimmed.bam',
-        summary='{OUTDIR}/{sample}/logs/Preprocess.summary'
-    params:
-        Fastq = "PLATFORM=illumina SORT_ORDER=queryname SAMPLE_NAME={sample}",
-        tagcb = cell_barcode_flags,
-        tagumi = umi_flags,
-        adapter = "SEQUENCE=AAGCAGTGGTATCAACGCAGAGTGAATGGG MISMATCHES=0 NUM_BASES=5",
-        polyA = "MISMATCHES=0 NUM_BASES=6"
+        bam=temp('{OUTDIR}/{sample}/preprocess/unaligned.bam')
     log:
-        stdout='{OUTDIR}/{sample}/logs/Preprocess.log'
+        stdout='{OUTDIR}/{sample}/logs/Generate_uBAM.log'
+    params:
+        Fastq = "PLATFORM=illumina SORT_ORDER=queryname SAMPLE_NAME={sample}"
     shell:
         """
-        java -jar {picard} FastqToSam F1={input.read1} F2={input.read2} O=/dev/stdout {params.Fastq} |
-        {dropseq}/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY={output.summary} {params.tagcb}|
-        {dropseq}/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY={output.summary} {params.tagumi} |
-        {dropseq}/TrimStartingSequence INPUT=/dev/stdin OUTPUT=/dev/stdout OUTPUT_SUMMARY={output.summary} {params.adapter} |
-        {dropseq}/PolyATrimmer INPUT=/dev/stdin OUTPUT={output.processed_bam} OUTPUT_SUMMARY={output.summary} {params.polyA}
+        java -jar {picard} FastqToSam F1={input.read1} F2={input.read2} O={output.bam} {params.Fastq}
+        """
+
+rule Tag:
+    input:
+        bam='{OUTDIR}/{sample}/preprocess/unaligned.bam'
+    output:
+        processed_bam = temp('{OUTDIR}/{sample}/preprocess/tagged.bam')
+    params:
+        barcode=config['spatial']['cell_barcode'],
+        umi=config['spatial']['umi']
+    log:
+        stdout='{OUTDIR}/{sample}/logs/Preprocess.log'
+    threads: config['project']['threads']
+    shell:
+        """
+        python {repo}/scripts/tag_reads.py --input_bam {input.bam} --output_bam {output.processed_bam} \
+         --threads {threads} --barcode_range {params.barcode} --umi_range {params.umi}
         """
 
 rule Generate_SE_Ubam:
     input:
-        bam='{OUTDIR}/{sample}/preprocess/tagged_polyA_adapter_trimmed.bam',
+        bam=temp('{OUTDIR}/{sample}/preprocess/tagged.bam'),
     output:
-        bam=temp('{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam'),
+        bam=temp('{OUTDIR}/{sample}/preprocess/SE.bam'),
         header=temp('{OUTDIR}/{sample}/preprocess/fixed_header.sam')
     threads: config['project']['threads']
     shell:
         """
-        sambamba view -t {threads} -H {input.bam} > {output.header} 
-        sambamba view -t {threads} {input.bam} | awk "NR%2==0" | samtools view -@ {threads} -b - | samtools reheader {output.header} /dev/stdin > {output.bam}
+        samtools view -@ {threads} -b -f 128 -o {output.bam} {input.bam}
         """
+
+rule Trim:
+    input:
+        read='{OUTDIR}/{sample}/preprocess/SE.bam'
+    output:
+        bam=temp('{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam')
+    threads: config['project']['threads']
+    shell:
+        "python {repo}/scripts/trim_sequence.py {input.bam} {output.bam} --num_threads {threads}"
 
 ############################################
 #      RUN STAR INDEX AND ALIGNMENT

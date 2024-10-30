@@ -1,0 +1,4 @@
+Config file config.yaml is extended by additional config specified via the command line.
+SyntaxError in file /home/bstrope/Documents/Xenomake/xenomake/snakemake/expression.smk, line 26:
+invalid syntax. Perhaps you forgot a comma?
+  File "/home/bstrope/Documents/Xenomake/xenomake/snakemake/main.smk", line 12, in <module>

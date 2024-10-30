@@ -1,0 +1,68 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 4
+Rules claiming more threads will be scaled down.
+Job stats:
+job                            count
+---------------------------  -------
+DGE_Human                          1
+DGE_Mouse                          1
+Expression_QC                      1
+Extract_Xenograft_Readnames        1
+Filter_MultiMapped_Human           1
+Filter_MultiMapped_Mouse           1
+Find_Overlap_Reads                 1
+Generate_SE_Ubam                   1
+H5ad_Human                         1
+H5ad_Mouse                         1
+HDF5_Human                         1
+HDF5_Mouse                         1
+Human_Downstream                   1
+Human_Xenograft_BAM_Files          1
+Make_Fastq                         1
+Merge_Human                        1
+Merge_Mouse                        1
+Mouse_Downstream                   1
+Mouse_Xenograft_BAM_Files          1
+Preprocess                         1
+Remove_Overlapped_Reads            1
+STAR_Human                         1
+STAR_Mouse                         1
+Subset_Overlapped                  1
+Xengsort_Clasify                   1
+all                                1
+create_tissue_file                 1
+filter_mm_ambiguous                1
+filter_mm_both                     1
+total                             29
+
+Select jobs to execute...
+
+[Tue Feb 20 09:23:00 2024]
+rule Preprocess:
+    input: test/sub1.fq.gz, test/sub2.fq.gz
+    output: bb/idk/preprocess/tagged_polyA_adapter_trimmed.bam, bb/idk/logs/Preprocess.summary
+    log: bb/idk/logs/Preprocess.log
+    jobid: 7
+    reason: Missing output files: bb/idk/preprocess/tagged_polyA_adapter_trimmed.bam
+    wildcards: OUTDIR=bb, sample=idk
+    resources: tmpdir=/tmp
+
+Terminating processes on user request, this might take some time.
+[Tue Feb 20 09:23:08 2024]
+Error in rule Preprocess:
+    jobid: 7
+    input: test/sub1.fq.gz, test/sub2.fq.gz
+    output: bb/idk/preprocess/tagged_polyA_adapter_trimmed.bam, bb/idk/logs/Preprocess.summary
+    log: bb/idk/logs/Preprocess.log (check log file(s) for error details)
+    shell:
+        
+        java -jar /home/bstrope/anaconda3/envs/xenomake/lib/python3.10/site-packages/xenomake/data/picard.jar FastqToSam F1=test/sub1.fq.gz F2=test/sub2.fq.gz O=/dev/stdout PLATFORM=illumina SORT_ORDER=queryname SAMPLE_NAME=idk |
+        /home/bstrope/anaconda3/envs/xenomake/lib/python3.10/site-packages/xenomake/data/Drop-seq_tools-2.5.3/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY=bb/idk/logs/Preprocess.summary BASE_RANGE=1-16 BASE_QUALITY=10 BARCODED_READ=1 DISCARD_READ=False TAG_NAME=CB NUM_BASES_BELOW_QUALITY=1|
+        /home/bstrope/anaconda3/envs/xenomake/lib/python3.10/site-packages/xenomake/data/Drop-seq_tools-2.5.3/TagBamWithReadSequenceExtended INPUT=/dev/stdin OUTPUT=/dev/stdout SUMMARY=bb/idk/logs/Preprocess.summary BASE_RANGE=17-28 BASE_QUALITY=10 BARCODED_READ=1 DISCARD_READ=False TAG_NAME=MI NUM_BASES_BELOW_QUALITY=1 |
+        /home/bstrope/anaconda3/envs/xenomake/lib/python3.10/site-packages/xenomake/data/Drop-seq_tools-2.5.3/TrimStartingSequence INPUT=/dev/stdin OUTPUT=/dev/stdout OUTPUT_SUMMARY=bb/idk/logs/Preprocess.summary SEQUENCE=AAGCAGTGGTATCAACGCAGAGTGAATGGG MISMATCHES=0 NUM_BASES=5 |
+        /home/bstrope/anaconda3/envs/xenomake/lib/python3.10/site-packages/xenomake/data/Drop-seq_tools-2.5.3/PolyATrimmer INPUT=/dev/stdin OUTPUT=bb/idk/preprocess/tagged_polyA_adapter_trimmed.bam OUTPUT_SUMMARY=bb/idk/logs/Preprocess.summary MISMATCHES=0 NUM_BASES=6
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Complete log: .snakemake/log/2024-02-20T092300.357207.snakemake.log

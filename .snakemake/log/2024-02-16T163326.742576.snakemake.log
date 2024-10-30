@@ -1,0 +1,8 @@
+Config file config.yaml is extended by additional config specified via the command line.
+Config file config.yaml is extended by additional config specified via the command line.
+Config file config.yaml is extended by additional config specified via the command line.
+Config file config.yaml is extended by additional config specified via the command line.
+KeyError in file /home/bstrope/Documents/Xenomake/xenomake/snakemake/qc.smk, line 12:
+'proejct'
+  File "/home/bstrope/Documents/Xenomake/xenomake/snakemake/main.smk", line 15, in <module>
+  File "/home/bstrope/Documents/Xenomake/xenomake/snakemake/qc.smk", line 12, in <module>

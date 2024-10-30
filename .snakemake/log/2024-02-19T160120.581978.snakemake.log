@@ -1,0 +1,41 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 4
+Rules claiming more threads will be scaled down.
+Job stats:
+job                   count
+------------------  -------
+Expression_QC             1
+H5ad_Human                1
+H5ad_Mouse                1
+Human_Downstream          1
+Mouse_Downstream          1
+all                       1
+create_tissue_file        1
+total                     7
+
+Select jobs to execute...
+
+[Mon Feb 19 16:01:20 2024]
+rule create_tissue_file:
+    input: test/sub/final/sub_human_counts.tsv.gz
+    output: test/sub/final/tissue_positions_list.csv
+    jobid: 26
+    reason: Missing output files: test/sub/final/tissue_positions_list.csv
+    wildcards: OUTDIR=test, sample=sub
+    threads: 4
+    resources: tmpdir=/tmp
+
+[Mon Feb 19 16:01:27 2024]
+Error in rule create_tissue_file:
+    jobid: 26
+    input: test/sub/final/sub_human_counts.tsv.gz
+    output: test/sub/final/tissue_positions_list.csv
+    shell:
+        
+        python /home/bstrope/Documents/Xenomake/xenomake/scripts/spatial_barcode.py --counts test/sub/final/sub_human_counts.tsv.gz         --output test/sub/final/tissue_positions_list.csv         --spatial_coordinates data/barcodes/visium_barcode_positions.csv
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2024-02-19T160120.581978.snakemake.log

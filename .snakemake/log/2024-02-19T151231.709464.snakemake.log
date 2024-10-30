@@ -1,0 +1,55 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 4
+Rules claiming more threads will be scaled down.
+Job stats:
+job                            count
+---------------------------  -------
+DGE_Human                          1
+DGE_Mouse                          1
+Expression_QC                      1
+Extract_Xenograft_Readnames        1
+Filter_MultiMapped_Human           1
+Filter_MultiMapped_Mouse           1
+H5ad_Human                         1
+H5ad_Mouse                         1
+HDF5_Human                         1
+HDF5_Mouse                         1
+Human_Downstream                   1
+Human_Xenograft_BAM_Files          1
+Merge_Human                        1
+Merge_Mouse                        1
+Mouse_Downstream                   1
+Mouse_Xenograft_BAM_Files          1
+Xengsort_Clasify                   1
+all                                1
+create_tissue_file                 1
+filter_mm_ambiguous                1
+filter_mm_both                     1
+total                             21
+
+Select jobs to execute...
+
+[Mon Feb 19 15:12:31 2024]
+rule Xengsort_Clasify:
+    input: test/sub/sorting/overlapped.fastq, species/idx.info, species/idx.hash
+    output: test/sub/xengsort/sub-host.fq.gz, test/sub/xengsort/sub-graft.fq.gz, test/sub/xengsort/sub-ambiguous.fq.gz, test/sub/xengsort/sub-neither.fq.gz, test/sub/xengsort/sub-both.fq.gz
+    jobid: 14
+    reason: Missing output files: test/sub/xengsort/sub-neither.fq.gz, test/sub/xengsort/sub-host.fq.gz, test/sub/xengsort/sub-ambiguous.fq.gz, test/sub/xengsort/sub-both.fq.gz, test/sub/xengsort/sub-graft.fq.gz
+    wildcards: OUTDIR=test, sample=sub
+    threads: 4
+    resources: tmpdir=/tmp
+
+[Mon Feb 19 15:12:32 2024]
+Error in rule Xengsort_Clasify:
+    jobid: 14
+    input: test/sub/sorting/overlapped.fastq, species/idx.info, species/idx.hash
+    output: test/sub/xengsort/sub-host.fq.gz, test/sub/xengsort/sub-graft.fq.gz, test/sub/xengsort/sub-ambiguous.fq.gz, test/sub/xengsort/sub-neither.fq.gz, test/sub/xengsort/sub-both.fq.gz
+    shell:
+        
+        xengsort -DD classify         --index species/idx         --fastq test/sub/sorting/overlapped.fastq         --out test/sub/xengsort/sub         --threads 4         --chunksize 16.0 &> test/sub/logs/xengsort_classify.log
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2024-02-19T151231.709464.snakemake.log

@@ -55,3 +55,10 @@ def str2bool(var):
 
 def match_default(key,cf):
     return cf.variables[key]
+
+
+def load_yaml_config(yaml_file):
+    """Loads the YAML configuration file."""
+    with open(yaml_file, 'r') as file:
+        config = yaml.safe_load(file)
+    return config

@@ -86,14 +86,7 @@ rule DGE_Human:
 
         python {repo}/scripts/convert_long.py --counts {output.counts} --output {output.long}
         """
-if config['project']['spatial_mode'] == 'sc10x_v3':
-    rule uncompress_whitelist:
-        input:
-            '{repo}/data/barcodes/3M-febrary-2018.txt'    
-        output:
-            '{repo}/data/barcodes/3M-febrary-2018.txt.gz'
-        shell:
-            "gzip {input}"
+
 
 #Replicate hdf5 architecture used by 10x genomics
 rule HDF5_Human:
