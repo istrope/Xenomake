@@ -35,7 +35,7 @@ def setup_config_parser(parent_parser):
         required = False
     )
     parser_config.add_argument(
-        '--barcode',
+        '--barcode_file',
         type=str,help='barcode file used to demultiplex samples in digitial gene expression. default is visium',
         default=None,
         required=False,
@@ -60,7 +60,7 @@ def setup_config_parser(parent_parser):
         '--polyA_trimming',
         required=False,
         help='trim poly A tails off of reads before mapping',
-        default=None
+        default=False
     )
     return parser_config
 

@@ -38,7 +38,7 @@ def setup_init_parser(parent_parser):
     parser_init.add_argument(
         '--read1',
         '-r1',
-        help='Path to the paired end r1 file generated from bcl2fastq',
+        help='Path to the paired end r1 file',
         type=str,
         required=True,
         default=None
@@ -46,14 +46,14 @@ def setup_init_parser(parent_parser):
     parser_init.add_argument(
         '--read2',
         '-r2',
-        help='Path to the paired end r2 file genereated from bcl2fastq',
+        help='Path to the paired end r2 file',
         type=str,
         required=True,
         default=None
     )
     parser_init.add_argument(
         '--spatial_mode',
-        help='use preset run modes to run samples based upon technology used [custom,visium,slide_seq,dbit-seq]',
+        help='use preset run modes to run samples based upon technology used [custom,visium,slide-seq,dbit-seq,hdst,sc10x,seq-scope]',
         required=True,
         default=None,
         type=str
@@ -317,60 +317,38 @@ def xenomake_species(args):
     process_species_args(args)
 
 def process_run_mode(args):
+    # THIS FUNCTION IN UTILIZED IF CUSTOM METHOD IS UTILIZED AND WILL POPULATE CONFIG YAML FILE FROM ARGS
     cf = ConfigFile.from_yaml(config_path)
-    defaults = ConfigFile.from_yaml(os.path.join(xenomake.__path__[0],'data/defaults_runmode.yaml'))
-    if args['run_mode'] == 'custom':
-        #Raise empty config variable error if input is None or empty
-        for key,value in args:
-            if (value == None) or (value == ''):
-                raise EmptyConfigVariableError(key)
-        #set custom args
-        for key,value in args:
-            cf.variables['run'][value] = args[value]
     
-    elif args['run_mode'] == 'lenient':
-        cf.variables['run'] = defaults.variables['lenient']
-    elif args['run_mode'] == 'prude':
-        cf.variables['run'] = defaults.variables['prude']
+    cf.variables['run']['mmreads'] = args['mm_reads']
+    cf.variables['run']['ambiguous'] = args['ambiguous']
+    cf.variables['run']['downstream'] = args['downstream']
+    cf.variables['run']['genic_only'] = args['genic_only']
+    cf.variables['run']['polyA_trimming'] = args['polyA_trimming']
 
-    else:
-        raise UnrecognizedConfigVariable(args['run_mode'])
-    
+    for key,value in cf.variables['run']:
+        if (value == None) or (value == ''):
+            raise EmptyConfigVariableError(key)
     cf.dump() 
 
 def process_spatial_mode(args):
+    #THIS FUNCTION IS UTILIZED IF CUSTOM METHOD IS DESCRIBED AND WILL POPULATE CONFIG FILE FROM ARGS
     cf = ConfigFile.from_yaml(config_path)
-    spat_config = ConfigFile.from_yaml(os.path.join(xenomake.__path__[0],'data/defaults_spatmode.yaml'))
-    bam_tags = "CR:{cell},CB:{cell},MI:{UMI},RG:{assigned}"
-    defaults = ['visium','slide_seq','hdst_seq','stero_seq','pixel_seq','dbit_seq']
 
-    if args['spatial_mode'] in defaults:
-        spatmode = args['spatial_mode']
-        spat_args = match_default(spatmode,spat_config) #replace args with default versions
-        cf.variables['barcodes'] = spat_args['barcodes']
-        cf.variables['spot_diameter_um'] = spat_args['spot_diameter_um']
-        cf.variables['width_um'] = spat_args['width_um']
-        cf.variables['umi'] = spat_args['umi']
-        cf.variables['cell'] = spat_args['cell']
-        cf.variables['polyA_trimming'] = spat_args['polyA_trimming']
-    
-    elif args['spatial_mode'] == 'custom':
-        cf.variables['barcodes'] = args['barcodes']
-        cf.variables['spot_diameter_um'] = args['spot_diameter_um']
-        cf.variables['width_um'] = args['width_um']
-        cf.variables['umi'] = args['umi']
-        cf.variables['cell'] = args['cell']
-        cf.variables['polyA_trimming'] = args['polyA_trimming']
-        
-    else:
-        raise UnrecognizedConfigVariable(args['spatial_mode'])
-    
-    cf.variables['alignment_tags'] = bam_tags
+    cf.variables['spatial']['barcode_file'] = args['barcodes']
+    cf.variables['spatial']['umi'] = args['umi']
+    cf.variables['spatial']['cell_barcode'] = args['cell']
+
+    for key,value in cf.variables['spatial']:
+        if (value == None) or (value == ''):
+            raise EmptyConfigVariableError(key)
     cf.dump()
 
 def xenomake_config(args):
-    process_run_mode(args)
-    process_spatial_mode(args)
+    if args['run_mode'] == 'custom':
+        process_run_mode(args)
+    if args['spatial_mode'] == 'custom':
+        process_spatial_mode(args)
 
 
 def xenomake_run(args):

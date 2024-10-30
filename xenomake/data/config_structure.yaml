@@ -24,14 +24,3 @@ spatial:
     barcode_file: None
     cell_barcode: None
     umi: None
-
-#species:
- #   mouse_ref: None
-  #  mouse_annotation: None
-   # mouse_index: None
-   # human_ref: None
-   # human_annotation: None
-   # human_index: None
-   # xengsort_hash: None
-   # xengsort_info: None
-    
