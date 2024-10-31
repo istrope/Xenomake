@@ -1,7 +1,0 @@
-Building DAG of jobs...
-MissingInputException in rule DGE_Human in file /home/bstrope/Documents/Xenomake/xenomake/snakemake/expression.smk, line 59:
-Missing input files for rule DGE_Human:
-    output: test/sub/final/sub_human_counts.tsv.gz, test/sub/qc/human.dge_summary, test/sub/final/sub_CellInteract_counts.tsv.gz
-    wildcards: OUTDIR=test, sample=sub
-    affected files:
-        /home/bstrope/Documents/Xenomake/xenomake/barcode/visium_barcodes.txt

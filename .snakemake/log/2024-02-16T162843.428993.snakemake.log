@@ -1,4 +1,0 @@
-KeyError in file /home/bstrope/Documents/Xenomake/xenomake/snakemake/mapping.smk, line 21:
-'repository'
-  File "/home/bstrope/Documents/Xenomake/xenomake/snakemake/main.smk", line 10, in <module>
-  File "/home/bstrope/Documents/Xenomake/xenomake/snakemake/mapping.smk", line 21, in <module>
