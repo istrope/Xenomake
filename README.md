@@ -90,7 +90,7 @@ xenomake init \
 	-r2 <read2> \
 	-s <sample name> \
 	-o <output directory> \
-	--spatial_mode <preset spatial mode [visium,dbit-seq,seq-scope] or custom> \
+	--spatial_mode <preset spatial mode [visium,dbit-seq,seq-scope,slide-seq,hdst] or custom> \
 	--run_mode <preset run mode [lenient,prude] or custom> \
 ```
 
@@ -112,16 +112,13 @@ xenomake species \
 If 'custom' run mode or spatial mode, you must input the following parameters
 ```
 # Print Help Function Call
-xenomake spatial --help
+xenomake config --help
 
 # Create configuration file
-xenomake spatial \
+xenomake config \
 	--barcode_file <barcode whitelist> \
 	--umi <umi structure> \
 	--cell_barcode <cell barcode structure> \
-	--beads <number of spots/beads> \
-	--spot_diameter_um <spot diameter> \
-	--slide_size_um <slide size> \
 	--ambiguous <re-partition ambiguous reads from xenograft sorting> \
 	--downstream <perform downstream data processing> \
 	--genic_only <only count genic reads (i.e., no UTR, intergenic,intronic> \
@@ -171,7 +168,10 @@ This is a **REQUIRED** step to initialize your implementation of the xenomake pi
 	
 	1. visium <br>
 	2. slide-seq <br>
-	6. dbit-seq <br>
+	3. dbit-seq <br>
+ 	4. hdst <br>
+  	5. sc10x <br>
+   	6. seq-scope <br>
 	7. custom: User Defined barcode structure, umi structure, spot size, slide size, barcode file, number of beads/spos
 </p>
 
@@ -181,8 +181,8 @@ This is a **REQUIRED** step to initialize your implementation of the xenomake pi
 - **--read2:** second paired-end read <br>
 - **--outdir:** name of project directory where the output file will be written <br>
 - **--sample:** name of sample to prepend filenames and create sample directory within the project directory
-- **--spatial_mode:** preset run modes based upon spatial method used [custom,visium,slide_seq,hdst_seq,stereo_seq,pixel_seq,dbit_seq]
-- **--run_mode:** preset run modes based upon read processing. This controls multi-mapped, ambiguous, and non-genic read handling [custom, prude, lenient]
+- **--spatial_mode:** preset run modes based upon spatial method used [custom,visium,sc10x,slide-seq,hdst,seq-scope,dbit_seq]
+- **--run_mode:** preset run modes based upon read processing. This controls multi-mapped, ambiguous, and non-genic read handling [custom, stringent, lenient]
 
 ### Optional Flags:
 - **--root_dir**: directory of project execution (default: ./) <br>
@@ -204,7 +204,7 @@ xenomake init \
 	-o <project_name> \
 	-s <sample_name> \
 	--spatial_mode <spatial_name> \
-	--run_mode <custom, lenient, spatial>
+	--run_mode <custom, lenient, stringent>
 ```
 <a name="sec3.2.4"></a>
 ### Output Message
@@ -278,10 +278,7 @@ Only necessary ***if you selected custom*** for either *run_mode* or *spatial_mo
 ### Spatial Flags
 - **--barcode_file**: <br>
 - **--umi**: <br>
-- **--cell_bc**: <br>
-- **--beads**: <br>
-- **spot_diameter_um**: <br>
-- **slide_size_um**: <br>
+- **--cell_barcode**: <br>
 ### Run Flags
 - **downstream**: <br>
 - **mm_reads**: <br>
@@ -293,10 +290,7 @@ if ***spatial_mode***: custom
 xenomake config \
 	--barcode_file <path to spot/cell barcode file> \
 	--umi <umi structure in units of bases> \
-	--cell_bc <barcode structure in unit of bases> \
-	--beads <number of spots/beads in spatial array> \
-	--spot_diameter_um <diameter of spot in um> \
-	--slide_size_um <diameter of slide in um>
+	--cell_barcode <barcode structure in unit of bases> \
 ```
 if ***run_mode*** : custom
 ```
