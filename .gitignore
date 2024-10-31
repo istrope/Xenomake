@@ -1,5 +1,10 @@
 build/*
+<<<<<<< HEAD
 dist/*
 git_token.txt
 setup.py
+=======
+setup.py
+dist/*
+>>>>>>> 43afd1e361bbf514ec6a19bdca6bfe1ec1f22386
 xenomake.egg-info/*

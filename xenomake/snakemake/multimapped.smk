@@ -8,9 +8,8 @@ Last Edited: 8/18/23
  ############################################
  # INCLUDE MAPPING MODULE AND POST PROCESSING
  ############################################
-configfile: 'config.yaml'
-sample=config['sample']
-OUTDIR=config['outdir']
+sample=config['project']['sample']
+OUTDIR=config['project']['outdir']
 repo=config['repository']
 #############################################
 #           FILTER_MULTIMAPPED
@@ -28,9 +27,9 @@ rule Mouse_Xenograft_BAM_Files:
         both=temp('{OUTDIR}/{sample}/xengsort/mouse/{sample}-both.bam')
     shell:
         """
-        java -jar {repo}/{picard} FilterSamReads I={input.bam} O={output.host} READ_LIST_FILE={input.host} FILTER=includeReadList SORT_ORDER=queryname
-        java -jar {repo}/{picard} FilterSamReads I={input.bam} O={output.ambiguous} READ_LIST_FILE={input.ambiguous} FILTER=includeReadList SORT_ORDER=queryname
-        java -jar {repo}/{picard} FilterSamReads I={input.bam} O={output.both} READ_LIST_FILE={input.both} FILTER=includeReadList SORT_ORDER=queryname
+        java -jar {picard} FilterSamReads I={input.bam} O={output.host} READ_LIST_FILE={input.host} FILTER=includeReadList SORT_ORDER=queryname
+        java -jar {picard} FilterSamReads I={input.bam} O={output.ambiguous} READ_LIST_FILE={input.ambiguous} FILTER=includeReadList SORT_ORDER=queryname
+        java -jar {picard} FilterSamReads I={input.bam} O={output.both} READ_LIST_FILE={input.both} FILTER=includeReadList SORT_ORDER=queryname
         """
 
 rule Human_Xenograft_BAM_Files:
@@ -45,9 +44,9 @@ rule Human_Xenograft_BAM_Files:
         both=temp('{OUTDIR}/{sample}/xengsort/human/{sample}-both.bam')
     shell:
         """
-        java -jar {repo}/{picard} FilterSamReads I={input.bam} O={output.graft} READ_LIST_FILE={input.host} FILTER=includeReadList SORT_ORDER=queryname
-        java -jar {repo}/{picard} FilterSamReads I={input.bam} O={output.ambiguous} READ_LIST_FILE={input.ambiguous} FILTER=includeReadList SORT_ORDER=queryname
-        java -jar {repo}/{picard} FilterSamReads I={input.bam} O={output.both} READ_LIST_FILE={input.both} FILTER=includeReadList SORT_ORDER=queryname
+        java -jar {picard} FilterSamReads I={input.bam} O={output.graft} READ_LIST_FILE={input.host} FILTER=includeReadList SORT_ORDER=queryname
+        java -jar {picard} FilterSamReads I={input.bam} O={output.ambiguous} READ_LIST_FILE={input.ambiguous} FILTER=includeReadList SORT_ORDER=queryname
+        java -jar {picard} FilterSamReads I={input.bam} O={output.both} READ_LIST_FILE={input.both} FILTER=includeReadList SORT_ORDER=queryname
         """
 
 rule filter_mm_both:
@@ -82,10 +81,10 @@ input_mouse_b = ['{OUTDIR}/{sample}/mouse_remaining.bam',
                 '{OUTDIR}/{sample}/xengsort/mouse/{sample}-host.bam']
 rule Merge_Mouse:
     input:
-        input_mouse_a if config['ambiguous'] else input_mouse_b
+        input_mouse_a if (config['run']['ambiguous'] in [True,'True','true']) else input_mouse_b
     output:
         bam=temp('{OUTDIR}/{sample}/mouse_merged.bam')
-    threads: config['threads']
+    threads: config['project']['threads']
     shell:
         "sambamba merge -t {threads} {output.bam} {input}"
 
@@ -98,7 +97,7 @@ input_human_b = ['{OUTDIR}/{sample}/human_remaining.bam',
                 '{OUTDIR}/{sample}/xengsort/human/{sample}-graft.bam']
 rule Merge_Human:
     input:
-        input_human_a if config['ambiguous'] else input_b
+        input_human_a if (config['run']['ambiguous'] in [True,'True','true']) else input_human_b
     output:
         bam=temp('{OUTDIR}/{sample}/human_merged.bam')
     shell:

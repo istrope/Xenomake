@@ -1,0 +1,11 @@
+stringent:
+    mm_reads: False
+    ambiguous: False
+    genic_only: True
+    downstream: True
+
+lenient:
+    mm_reads: True
+    ambiguous: True
+    genic_only: True
+    downstream: True

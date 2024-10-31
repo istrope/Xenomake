@@ -7,9 +7,8 @@ Last Edited: 8/22/23
 #############################################
 #       SPECIFY WILDCARD VARIABLES
 #############################################
-configfile: 'config.yaml'
-sample=config['sample']
-OUTDIR=config['outdir']
+sample=config['project']['sample']
+OUTDIR=config['project']['outdir']
 repo=config['repository']
 #############################################
 #       SPECIFY PARAMETERS

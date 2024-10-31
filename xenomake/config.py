@@ -1,87 +1,8 @@
-import argparse
 import os
 import yaml
 import xenomake
 from xenomake.utils import str2bool
 from xenomake.errors import *
-
-def setup_config_parser(parent_parser):
-    parser_config = parent_parser.add_parser(
-        'config',
-        help = 'create custom method for spatial technology'
-    )
-    parser_config.add_argument(
-        '--ambiguous',
-        help = 'handle multimap from "both" and "ambiguous" output reads (Must be boolean True/False)',
-        required=False,
-        default=None,
-    )
-    parser_config.add_argument(
-        '--mm_reads',
-        help='assign multimapped reads to highest confidence position',
-        required=False,
-        default=None,
-    )
-    parser_config.add_argument(
-        '--downstream',
-        help = 'Performs Scanpy Processing of Data (Must be boolean True/False)',
-        required = False,
-        default = None,
-    )
-    parser_config.add_argument(
-        '--genic_only',
-        help='use only genic/exonic reads and excluse flags for intergenic,intronic',
-        default=None,
-        required = False
-    )
-    parser_config.add_argument(
-        '--barcode',
-        type=str,help='barcode file used to demultiplex samples in digitial gene expression. default is visium',
-        default=None,
-        required=False,
-    )
-    parser_config.add_argument(
-        '--umi',
-        type = str,
-        help='umi structure defining the positions of umi in units of bases'
-        +'Example: Visium Cell Barcode is contained in bases 17-28 and umi flag would be'
-        + '--umi 17-28',
-        required = False
-        )
-    parser_config.add_argument(
-        '--beads',
-        type=int,
-        help='expeted number of spots/beads for run',
-        default=None
-    )
-    parser_config.add_argument(
-        '--spot_diameter_um',
-        type =float,
-        required=False,
-        help='diameter of spot in spatial array: visium = 55um',
-        default=None
-    )
-    parser_config.add_argument(
-        '--width_um',
-        type=float,
-        required=False,help='distance between spots in um, visium = 100um',
-        default=None
-    )
-    parser_config.add_argument(
-        '--cell_barcode',
-        required=False,
-        help = 'cell barcode structure defining the positions of umi in units of bases'
-        +'Example: Visium Cell Barcode is contained in bases 1-16 and umi flag would be'
-        + '--cell_barcode 1-16',
-        default=None
-    )
-    parser_config.add_argument(
-        '--polyA_trimming',
-        required=False,
-        help='trim poly A tails off of reads before mapping',
-        default=None
-    )
-    return parser_config
 
 class ConfigMainVariable:
     def __init__(self,name,**kwargs):
@@ -116,9 +37,6 @@ class RunMode(ConfigMainVariable):
 
 class Spatial_Setup(ConfigMainVariable):
     variable_types = {'barcode_file':str,
-                      'spot_diameter_um':float,
-                      'width_um': int,
-                      'beads':int,
                       'cell_barcode':str,
                       'umi':str}
     @property
@@ -215,7 +133,7 @@ class ConfigFile:
     def check_project(self):
         defaults = {
             'run_mode': {'lenient','prude','custom'},
-            'spatial_mode': {'visium','seq-scope','dbit-seq','custom'}
+            'spatial_mode': {'visium','seq-scope','dbit-seq','hdst','sc10x','slide-seq','custom'}
 
         }
         project_vars = self.variables['project']
