@@ -1,0 +1,8 @@
+Building DAG of jobs...
+File path /home/bstrope/Documents/Xenomake/xenomake//home/bstrope/Documents/Xenomake/xenomake/barcode/visium_barcodes.txt contains double '/'. This is likely unintended. It can also lead to inconsistent results of the file-matching approach used by Snakemake.
+MissingInputException in rule DGE_Human in file /home/bstrope/Documents/Xenomake/xenomake/snakemake/expression.smk, line 59:
+Missing input files for rule DGE_Human:
+    output: downsampled/medullo/final/medullo_human_counts.tsv.gz, downsampled/medullo/qc/human.dge_summary, downsampled/medullo/final/medullo_CellInteract_counts.tsv.gz
+    wildcards: OUTDIR=downsampled, sample=medullo
+    affected files:
+        /home/bstrope/Documents/Xenomake/xenomake//home/bstrope/Documents/Xenomake/xenomake/barcode/visium_barcodes.txt

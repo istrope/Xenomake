@@ -16,6 +16,38 @@ def check_index(star_index):
         
         
 
+def validate_directory(directory_path):
+    """Check if the directory exists."""
+    if not os.path.isdir(directory_path):
+        raise FileNotFoundError(directory_path)
+
+def validate_mode(mode, valid_modes, mode_type):
+    """Validate if the mode is within the predefined set of valid modes."""
+    if mode not in valid_modes:
+        raise UnrecognizedConfigVariable(mode_type, mode)
+
+def validate_init_inputs(init_args):
+    VALID_RUN_MODES = ['prude', 'lenient', 'custom']
+    VALID_SPATIAL_MODES = ['custom', 'visium', 'slide-seq', 'dbit-seq', 'hdst', 'sc10x', 'seq-scope']
+    """
+    Validate all input files, directories, and modes in the `xenomake init` command.
+
+    :param init_args: Dictionary with keys: 'read1', 'read2', 'spatial_mode', 'run_mode', 'sample', 'outdir', 'root_dir', 'temp_dir'.
+    """
+    # Validate input files (read1 and read2) for existence and correct extension
+    assert_file(init_args['read1'],default_value=None,extension=['.fq','.fq.gz','.fastq','.fastq.gz'])
+    assert_file(init_args['read2'],default_value = None,extension = ['.fq','.fq.gz','.fastq','.fastq.gz'])
+
+    # Validate directories
+    if 'root_dir' in init_args:
+        validate_directory(init_args['root_dir'])
+    if 'temp_dir' in init_args:
+        validate_directory(init_args['temp_dir'])
+
+    # Validate modes
+    validate_mode(init_args['spatial_mode'], VALID_SPATIAL_MODES, 'spatial_mode')
+    validate_mode(init_args['run_mode'], VALID_RUN_MODES, 'run_mode')
+
 def assert_file(file_path,default_value=None,extension=['all']):
     if file_path == default_value:
         # file doesn't exist but has the default value,
@@ -55,3 +87,10 @@ def str2bool(var):
 
 def match_default(key,cf):
     return cf.variables[key]
+
+
+def load_yaml_config(yaml_file):
+    """Loads the YAML configuration file."""
+    with open(yaml_file, 'r') as file:
+        config = yaml.safe_load(file)
+    return config
