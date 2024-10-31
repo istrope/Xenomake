@@ -172,7 +172,7 @@ This is a **REQUIRED** step to initialize your implementation of the xenomake pi
 	1. visium <br>
 	2. slide-seq <br>
 	6. dbit-seq <br>
-	7. custom: User Defined barcode structure, umi structure, spot size, slide size, barcode file, number of beads/spots
+	7. custom: User Defined barcode structure, umi structure, spot size, slide size, barcode file, number of beads/spos
 </p>
 
 <a name="sec3.2.2"></a>

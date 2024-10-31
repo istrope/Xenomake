@@ -6,8 +6,8 @@ import scanpy as sc
 
 import xenomake
 from xenomake.errors import *
-from xenomake.utils import check_index, assert_file, match_default
-from xenomake.config import ConfigFile, setup_config_parser, ConfigMainVariable, RunMode,Spatial_Setup
+from xenomake.utils import *
+from xenomake.config import ConfigFile, ConfigMainVariable, RunMode,Spatial_Setup
 config_path = 'config.yaml'
 
 class Xenomake:
@@ -115,6 +115,66 @@ def setup_init_parser(parent_parser):
     parser_init.set_defaults(func=xenomake_init)
 
     return parser_init
+def setup_config_parser(parent_parser):
+    parser_config = parent_parser.add_parser(
+        'config',
+        help = 'create custom method for spatial technology'
+    )
+    parser_config.add_argument(
+        '--ambiguous',
+        help = 'handle multimap from "both" and "ambiguous" output reads (Must be boolean True/False)',
+        required=False,
+        default=None,
+    )
+    parser_config.add_argument(
+        '--mm_reads',
+        help='assign multimapped reads to highest confidence position',
+        required=False,
+        default=None,
+    )
+    parser_config.add_argument(
+        '--downstream',
+        help = 'Performs Scanpy Processing of Data (Must be boolean True/False)',
+        required = False,
+        default = None,
+    )
+    parser_config.add_argument(
+        '--genic_only',
+        help='use only genic/exonic reads and excluse flags for intergenic,intronic',
+        default=None,
+        required = False
+    )
+    parser_config.add_argument(
+        '--barcode_file',
+        type=str,help='barcode file used to demultiplex samples in digitial gene expression. default is visium',
+        default=None,
+        required=False,
+    )
+    parser_config.add_argument(
+        '--umi',
+        type = str,
+        help='umi structure defining the positions of umi in units of bases'
+        +'Example: Visium Cell Barcode is contained in bases 17-28 and umi flag would be'
+        + '--umi 17-28',
+        required = False
+        )
+    parser_config.add_argument(
+        '--cell_barcode',
+        required=False,
+        help = 'cell barcode structure defining the positions of umi in units of bases'
+        +'Example: Visium Cell Barcode is contained in bases 1-16 and umi flag would be'
+        + '--cell_barcode 1-16',
+        default=None
+    )
+    parser_config.add_argument(
+        '--polyA_trimming',
+        required=False,
+        help='trim poly A tails off of reads before mapping',
+        default=False
+    )
+    parser_config.set_defaults(func=xenomake_config)
+    return parser_config
+
 def setup_species_parser(parent_parser):
     parser_species= parent_parser.add_parser(
         'species',
@@ -214,6 +274,9 @@ def setup_run_parser(parent_parser):
 
     return parser_run
 
+#########################
+# UTILITY FUNCTIONS
+########################
 def populate_default_spatmode(args):
     spatmode = args['spatial_mode']
     spat_config = ConfigFile.from_yaml(os.path.join(xenomake.__path__[0],'data/defaults_spatmode.yaml'))
@@ -225,7 +288,10 @@ def populate_default_runmode(args):
     defaults = ConfigFile.from_yaml(os.path.join(xenomake.__path__[0],'data/defaults_runmode.yaml'))
     run_args = match_default(runmode,defaults)    
     return run_args
-   
+
+##################################
+# RUNNING XENOMAKE SPECIES
+##################################
 def process_species_args(args):
         #check files have correct extensions
         if not os.path.exists('species'):
@@ -259,9 +325,18 @@ def process_species_args(args):
 
         print('\n species directory successfully completed, keep project execution in current directory')
 
+##################################
+#  INITIALIZE CONFIGFILE
+#################################
+
 def xenomake_init(args):
+    #check inputs
     if os.path.isfile(config_path):
         raise Exception('config file exists, project has been initialized in current directory')
+    try:
+        validate_init_inputs(args)
+    except XenomakeError as e:
+        print(e)
     initial_config = os.path.join(xenomake.__path__[0],'data/config_structure.yaml')
     cf = ConfigFile.from_yaml(initial_config)
     cf.set_file_path(config_path)
@@ -316,41 +391,49 @@ def xenomake_init(args):
 def xenomake_species(args):
     process_species_args(args)
 
+################################ 
+# HANDLING OF CUSTOM INPUTS FOR RUN MODE OR SPATIAL MODE 
+###############################
+
+def check_config(args,required_keys):
+    missing_keys = [key for key in required_keys if key not in args or args[key] in (None,'')]
+    if missing_keys:
+        missing_keys_str = ', '.join(missing_keys)
+        raise EmptyConfigVariableError(missing_keys_str)
 def process_run_mode(args):
     # THIS FUNCTION IN UTILIZED IF CUSTOM METHOD IS UTILIZED AND WILL POPULATE CONFIG YAML FILE FROM ARGS
     cf = ConfigFile.from_yaml(config_path)
-    
+    check_config(args,['mmreads','ambiguous','downstream','genic_only','polyA_trimming'])
+
     cf.variables['run']['mmreads'] = args['mm_reads']
     cf.variables['run']['ambiguous'] = args['ambiguous']
     cf.variables['run']['downstream'] = args['downstream']
     cf.variables['run']['genic_only'] = args['genic_only']
     cf.variables['run']['polyA_trimming'] = args['polyA_trimming']
 
-    for key,value in cf.variables['run']:
-        if (value == None) or (value == ''):
-            raise EmptyConfigVariableError(key)
     cf.dump() 
 
 def process_spatial_mode(args):
     #THIS FUNCTION IS UTILIZED IF CUSTOM METHOD IS DESCRIBED AND WILL POPULATE CONFIG FILE FROM ARGS
     cf = ConfigFile.from_yaml(config_path)
+    check_config(args,['barcode_file','umi','cell_barcode'])
 
-    cf.variables['spatial']['barcode_file'] = args['barcodes']
+    cf.variables['spatial']['barcode_file'] = args['barcode_file']
     cf.variables['spatial']['umi'] = args['umi']
-    cf.variables['spatial']['cell_barcode'] = args['cell']
+    cf.variables['spatial']['cell_barcode'] = args['cell_barcode']
 
-    for key,value in cf.variables['spatial']:
-        if (value == None) or (value == ''):
-            raise EmptyConfigVariableError(key)
     cf.dump()
 
 def xenomake_config(args):
-    if args['run_mode'] == 'custom':
+    cf = ConfigFile.from_yaml(config_path)
+    if cf.variables['project']['run_mode'] == 'custom':
         process_run_mode(args)
-    if args['spatial_mode'] == 'custom':
+    if cf.variables['project']['spatial_mode'] == 'custom':
         process_spatial_mode(args)
 
-
+############################## 
+#    RUN SNAKEMAKE
+###############################
 def xenomake_run(args):
     if not os.path.isfile(config_path):
         msg = 'please initialize xenomake run first.\n'
@@ -419,7 +502,7 @@ def cmdline():
         else:
             parser_dict['main'].print_help()
         return 0
-    
+
     args = {key: value for key, value in vars(args).items() if value is not None}
     args.pop('func',None)
     args.pop('subcommand',None)

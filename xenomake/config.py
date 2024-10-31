@@ -1,68 +1,8 @@
-import argparse
 import os
 import yaml
 import xenomake
 from xenomake.utils import str2bool
 from xenomake.errors import *
-
-def setup_config_parser(parent_parser):
-    parser_config = parent_parser.add_parser(
-        'config',
-        help = 'create custom method for spatial technology'
-    )
-    parser_config.add_argument(
-        '--ambiguous',
-        help = 'handle multimap from "both" and "ambiguous" output reads (Must be boolean True/False)',
-        required=False,
-        default=None,
-    )
-    parser_config.add_argument(
-        '--mm_reads',
-        help='assign multimapped reads to highest confidence position',
-        required=False,
-        default=None,
-    )
-    parser_config.add_argument(
-        '--downstream',
-        help = 'Performs Scanpy Processing of Data (Must be boolean True/False)',
-        required = False,
-        default = None,
-    )
-    parser_config.add_argument(
-        '--genic_only',
-        help='use only genic/exonic reads and excluse flags for intergenic,intronic',
-        default=None,
-        required = False
-    )
-    parser_config.add_argument(
-        '--barcode_file',
-        type=str,help='barcode file used to demultiplex samples in digitial gene expression. default is visium',
-        default=None,
-        required=False,
-    )
-    parser_config.add_argument(
-        '--umi',
-        type = str,
-        help='umi structure defining the positions of umi in units of bases'
-        +'Example: Visium Cell Barcode is contained in bases 17-28 and umi flag would be'
-        + '--umi 17-28',
-        required = False
-        )
-    parser_config.add_argument(
-        '--cell_barcode',
-        required=False,
-        help = 'cell barcode structure defining the positions of umi in units of bases'
-        +'Example: Visium Cell Barcode is contained in bases 1-16 and umi flag would be'
-        + '--cell_barcode 1-16',
-        default=None
-    )
-    parser_config.add_argument(
-        '--polyA_trimming',
-        required=False,
-        help='trim poly A tails off of reads before mapping',
-        default=False
-    )
-    return parser_config
 
 class ConfigMainVariable:
     def __init__(self,name,**kwargs):
