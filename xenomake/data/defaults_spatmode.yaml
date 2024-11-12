@@ -31,5 +31,5 @@ seq-scope:
 dbit-seq:
     barcode_file: 'barcodes/dbit_seq_barcodes.txt'
     umi: 17-26
-    cell_barcode: 8-16
+    cell_barcode: 1-16
     polyA_trimming: False  # Keeping original additional options in place if needed

@@ -7,8 +7,6 @@ Last Edit: 8/18/23
 #############################################
 #            SPECIFY PARAMETERS
 ##############################################
-cell_barcode_flags="BASE_RANGE=" + str(config['project']['cell_barcode']) + " " + "BASE_QUALITY=10 BARCODED_READ=1 DISCARD_READ=False TAG_NAME=CB NUM_BASES_BELOW_QUALITY=1"
-umi_flags="BASE_RANGE=" + str(config['project']['umi']) + " " + "BASE_QUALITY=10 BARCODED_READ=1 DISCARD_READ=False TAG_NAME=MI NUM_BASES_BELOW_QUALITY=1"
 star_mapping_flags="--readFilesCommand samtools view -f 4 --readFilesType SAM SE --outSAMtype BAM Unsorted --genomeLoad NoSharedMemory --outSAMprimaryFlag AllBestScore --outSAMattributes All --outSAMunmapped None --outStd BAM_Unsorted --limitOutSJcollapsed 5000000"
 #############################################
 #        SPECIFY WILDCARD VARIABLE
@@ -23,17 +21,35 @@ repo=config['repository']
 #     TAG,TRIM,AND PREPROCESS READS
 ############################################
 
+if config['project']['spatial'] == 'dbit-seq':
+#UPDATE READ STRUCTURES FOR DBIT-Seq to Fit in with remaining pipeline
+    rule fix_reads:
+        input:
+            read1=config['project']['r1']
+            read2=config['project']['r2']
+        output:
+            read1='dbit/reformatted.R1.fastq.gz',
+            read2='dbit/reformatted.R2.fastq.gz',
+            log='dbit/log'
+        params:
+            sample=config['project']['sample']
+        shell:
+            "perl {repo}/scripts/reformat.pl --read1 {input.read1} --read2 {input.read2} -outdir dbit"
+            "python {repo}/scripts/reformat.py"
+
+
+
 rule Trim:
     input:
         read1=config['project']['r1'],
-        read2=config['project']['r1']
+        read2=config['project']['r2']
     output:
         fq1=temp('{OUTDIR}/{sample}/preprocess/r1.fq.gz'),
         fq2=temp('{OUTDIR}/{sample}/preprocess/r2.fq.gz')
     threads:
         config['project']['threads']
     shell:
-        "cutadapt -a AGATCGGAAGAGC -A AGATCGGAAGAGC -q 20 --minimum-length 1 --trim-n --poly-a --cores {threads} -o {output.fq1} -p {output.fq2} {input.read1} {input.read2}"
+        "cutadapt -a AGATCGGAAGAGC -A AGATCGGAAGAGC -q 10 --minimum-length 1 --trim-n --poly-a --cores {threads} -o {output.fq1} -p {output.fq2} {input.read1} {input.read2}"
 
 rule Generate_uBAM:
     input:
