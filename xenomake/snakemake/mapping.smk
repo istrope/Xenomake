@@ -22,10 +22,23 @@ repo=config['repository']
 ############################################
 #     TAG,TRIM,AND PREPROCESS READS
 ############################################
-rule Generate_uBAM:
+
+rule Trim:
     input:
         read1=config['project']['r1'],
         read2=config['project']['r1']
+    output:
+        fq1=temp('{OUTDIR}/{sample}/preprocess/r1.fq.gz'),
+        fq2=temp('{OUTDIR}/{sample}/preprocess/r2.fq.gz')
+    threads:
+        config['project']['threads']
+    shell:
+        "cutadapt -a AGATCGGAAGAGC -A AGATCGGAAGAGC -q 20 --minimum-length 1 --trim-n --poly-a --cores {threads} -o {output.fq1} -p {output.fq2} {input.read1} {input.read2}"
+
+rule Generate_uBAM:
+    input:
+        read1='{OUTDIR}/{sample}/preprocess/r1.fq.gz',
+        read2='{OUTDIR}/{sample}/preprocess/r2.fq.gz'
     output:
         bam=temp('{OUTDIR}/{sample}/preprocess/unaligned.bam')
     log:
@@ -66,15 +79,6 @@ rule Generate_SE_Ubam:
         samtools view -@ {threads} -b -f 128 -o {output.bam} {input.bam}
         """
 
-rule Trim:
-    input:
-        read='{OUTDIR}/{sample}/preprocess/SE.bam'
-    output:
-        bam=temp('{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam')
-    threads: config['project']['threads']
-    shell:
-        "python {repo}/scripts/trim_sequence.py {input.bam} {output.bam} --num_threads {threads}"
-
 ############################################
 #      RUN STAR INDEX AND ALIGNMENT
 ############################################
@@ -109,7 +113,7 @@ rule Index_Genomes:
         """
 rule STAR_Human:
     input:
-        ubam='{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam',
+        ubam='{OUTDIR}/{sample}/preprocess/SE.bam',
         index='species/human/star_index/'
     output:
         aln=temp('{OUTDIR}/{sample}/mapping/human_Aligned.out.bam'),
@@ -141,7 +145,7 @@ rule STAR_Human:
 
 rule STAR_Mouse:
     input:
-        ubam='{OUTDIR}/{sample}/preprocess/unaligned_bc_umi_tagged.bam',
+        ubam='{OUTDIR}/{sample}/preprocess/SE.bam',
         index='species/mouse/star_index/'
     output:
         aln='{OUTDIR}/{sample}/mapping/mouse_Aligned.out.bam',

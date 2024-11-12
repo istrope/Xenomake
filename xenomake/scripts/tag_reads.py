@@ -1,108 +1,93 @@
 import pysam
 import argparse
-from multiprocessing import Pool
+import time
+import logging
 
 def parse_range(range_str):
-    """
-    Parse a range string (e.g., "1-16") into start and end positions.
-    
-    Parameters:
-    - range_str: String representing the range (e.g., "1-16").
-    
-    Returns:
-    - Tuple with start and end positions as integers.
-    """
     start, end = map(int, range_str.split('-'))
     return start, end
 
-def tag_single_read(read, barcode_start, barcode_end, umi_start, umi_end):
+def tag_pair(read1, read2, barcode_start, barcode_end, umi_start, umi_end):
     """
-    Tags a single read with cell barcodes and UMIs.
-    
-    Parameters:
-    - read: The read object.
-    - barcode_start: Start position of the cell barcode in the read sequence.
-    - barcode_end: End position of the cell barcode in the read sequence.
-    - umi_start: Start position of the UMI in the read sequence.
-    - umi_end: End position of the UMI in the read sequence.
-    
-    Returns:
-    - The modified read with added tags.
+    Tags both reads in a pair with the same cell barcodes and UMIs from read1.
     """
-    if read.is_read1:  # Assuming barcodes and UMIs are in R1
-        # Extract barcode and UMI from read sequence
-        barcode = read.query_sequence[barcode_start-1:barcode_end]
-        umi = read.query_sequence[umi_start-1:umi_end]
-        
-        # Add tags to the read
+    # Extract barcode and UMI from read1 sequence
+    barcode = read1.query_sequence[barcode_start - 1:barcode_end]
+    umi = read1.query_sequence[umi_start - 1:umi_end]
+    
+    # Tag both reads with the extracted barcode and UMI
+    for read in [read1, read2]:
         read.set_tag("CB", barcode, value_type="Z")  # Cell Barcode
-        read.set_tag("UB", umi, value_type="Z")  # UMI
+        read.set_tag("MI", umi, value_type="Z")      # UMI
     
-    return read
+    return read1, read2
 
-def process_reads_chunk(chunk, barcode_start, barcode_end, umi_start, umi_end):
+def process_and_tag_reads(input_bam, output_bam, barcode_range, umi_range, chunk_size=10000, log_interval=100000):
     """
-    Processes a chunk of reads, tagging them with barcodes and UMIs.
-    """
-    tagged_reads = []
-    for read in chunk:
-        tagged_read = tag_single_read(read, barcode_start, barcode_end, umi_start, umi_end)
-        tagged_reads.append(tagged_read)
-    return tagged_reads
-
-def tag_barcodes_and_umis(input_bam, output_bam, barcode_range, umi_range, threads):
-    """
-    Tags reads with cell barcodes and UMIs based on input ranges.
-    
-    Parameters:
-    - input_bam: Path to input BAM/UBAM file containing paired reads.
-    - output_bam: Path to output BAM file where tagged reads will be saved.
-    - barcode_range: Tuple representing the start and end positions for the cell barcode.
-    - umi_range: Tuple representing the start and end positions for the UMI.
-    - threads: Number of threads to use for multithreading.
+    Processes and tags paired-end reads with cell barcodes and UMIs from read1.
     """
     barcode_start, barcode_end = barcode_range
     umi_start, umi_end = umi_range
+    total_reads = 0
+    last_logged_reads = -log_interval  # Ensures the first log occurs at 0
+    start_time = time.time()
     
-    input_file = pysam.AlignmentFile(input_bam, "rb", threads=threads)
-    output_file = pysam.AlignmentFile(output_bam, "wb", header=input_file.header)
+    with pysam.AlignmentFile(input_bam, "rb", check_sq=False) as input_file:
+        with pysam.AlignmentFile(output_bam, "wb", header=input_file.header) as output_file:
+            read_buffer = {}
+            chunk = []
 
-    chunk_size = 10000  # Number of reads per chunk
-    chunk = []
-    
-    with Pool(processes=threads) as pool:
-        for read in input_file:
-            chunk.append(read)
-            if len(chunk) >= chunk_size:
-                # Process the chunk of reads in parallel
-                results = pool.apply_async(process_reads_chunk, (chunk, barcode_start, barcode_end, umi_start, umi_end))
-                for tagged_read in results.get():
-                    output_file.write(tagged_read)
-                chunk = []  # Reset chunk
+            for read in input_file:
+                qname = read.query_name
 
-        # Process the remaining reads in the final chunk
-        if chunk:
-            results = pool.apply_async(process_reads_chunk, (chunk, barcode_start, barcode_end, umi_start, umi_end))
-            for tagged_read in results.get():
+
+                if qname in read_buffer:
+                    # If a paired read is already in the buffer, this is read2
+                    read1 = read_buffer.pop(qname)
+                    read1, read = tag_pair(read1, read, barcode_start, barcode_end, umi_start, umi_end)
+                    # Add both reads to the chunk
+                    chunk.extend([read1, read])
+                    total_reads += 2
+
+                else:
+                    # Store read1 in the buffer if not already paired
+                    read_buffer[qname] = read
+
+                # Process chunk if it reaches the specified size
+                if len(chunk) >= chunk_size:
+                    for tagged_read in chunk:
+                        output_file.write(tagged_read)
+                    chunk.clear()  # Clear chunk after writing
+
+                if total_reads - last_logged_reads >= log_interval:
+                    last_logged_reads = total_reads
+                    elapsed_time = time.time() - start_time
+                    logging.info(f"Processed {total_reads} reads in {elapsed_time:.2f} seconds")
+
+            # Write any remaining reads in the last chunk
+            for tagged_read in chunk:
                 output_file.write(tagged_read)
 
-    input_file.close()
-    output_file.close()
+            # Final log for total reads processed
+            elapsed_time = time.time() - start_time
+            logging.info(f"Finished processing {total_reads} reads in {elapsed_time:.2f} seconds")
 
 # Command-line interface
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Tag barcodes and UMIs in a BAM file")
+    print("Script started")
+    parser = argparse.ArgumentParser(description="Tag barcodes and UMIs in a BAM file for paired-end reads")
     parser.add_argument("--input_bam", required=True, help="Path to input BAM/UBAM file")
     parser.add_argument("--output_bam", required=True, help="Path to output BAM file")
     parser.add_argument("--barcode_range", required=True, help="Range for cell barcode (e.g., '1-16')")
     parser.add_argument("--umi_range", required=True, help="Range for UMI (e.g., '17-28')")
-    parser.add_argument("--threads", type=int, default=1, help="Number of threads for parallel processing")
+    parser.add_argument("--chunk_size", type=int, default=10000, help="Number of reads per chunk")
+    parser.add_argument("--log_interval", type=int, default=1000000, help="Number of reads between log messages")
 
     args = parser.parse_args()
 
-    # Parse input ranges for barcode and UMI
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
     barcode_range = parse_range(args.barcode_range)
     umi_range = parse_range(args.umi_range)
     
-    # Run the tagging function
-    tag_barcodes_and_umis(args.input_bam, args.output_bam, barcode_range, umi_range, args.threads)
+    process_and_tag_reads(args.input_bam, args.output_bam, barcode_range, umi_range, args.chunk_size, args.log_interval)

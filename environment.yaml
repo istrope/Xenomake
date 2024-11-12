@@ -33,3 +33,4 @@ dependencies:
         - numba>=0.56
         - jsonargparse>=4.24.0
         - h5py
+        - cutadapt
